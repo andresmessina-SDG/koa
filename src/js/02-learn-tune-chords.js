@@ -81,7 +81,7 @@ function renderLearn(){
       <div class="streak">${st?`<span class="t-hero">${st}</span><span class="small">${st===1?'day':'days'} in a row${tmin?`<br>${tmin} min today`:''}</span>`:Object.keys(S.mins).some(k=>k!==today())?`<span class="t-title">Welcome back</span>`:`<span class="t-title">Day one</span>`}</div>
       <div class="dots" role="img" aria-label="Practiced on ${practiced} of the last 7 days">${days.map((x,i)=>`<div><i class="${(S.mins[x.k]||0)>=30?'on':''}${i===6?' now':''}"></i>${x.l}</div>`).join('')}</div>
     </div>
-    ${hero}
+    ${keepNote()}${hero}
     <h3 class="label">Your path</h3>
     <ol class="path">${LESSONS.map((l,i)=>{ const dn=lessonDone(l), cls=dn?'done':i===next?'current':'todo';
       return `<li class="step ${cls}"><button class="step-h" data-i="${i}" aria-expanded="${i===openLesson}">
@@ -90,7 +90,7 @@ function renderLearn(){
   $$('#learn .step-h').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; openLesson=openLesson===i?-1:i; renderLearn(); const el=$(`#learn .step-h[data-i="${i}"]`); if(el) el.focus(); });
   $$('#learn [data-go]').forEach(b=>b.onclick=()=>goLesson(LESSONS[+b.dataset.go]));
   $$('#learn [data-mark]').forEach(b=>b.onclick=()=>{ const l=LESSONS[+b.dataset.mark]; if(!S.manual.includes(l.id)) S.manual.push(l.id); save(); openLesson=-1; renderLearn(); });
-  wirePlanCard();
+  wirePlanCard(); wireKeepNote(); askToKeep();
 }
 function goLesson(l){
   if(l.type==='intro'){ introStep=0; introOk=false; zoomed=false; if(curTab!=='learn') show('learn'); else renderLearn(); window.scrollTo(0,0); return; }
@@ -120,8 +120,9 @@ $('#micBtn').onclick=async()=>{
   catch(e){ $('#tMsg').textContent=micError(e)+' Tune by ear below instead.'; $('#earBox').open=true; }
 };
 function resetTunerDisplay(){ tCents=null; hist=[]; $('#tNote').textContent='–'; $('#tNote').style.color=''; $('#tNote').classList.add('idle'); $('#tCents').textContent=mic.stream?'Play a string':'Waiting to listen'; $$('#tStrings button').forEach(b=>b.classList.remove('hit')); }
-function tunerFrame(){
-  if(mic.an && frame%2===0){
+let waveFlat=false;
+function tunerFrame(tick){
+  if(tick && mic.an && frame%2===0){
     const f=autoCorrelate(mic.td.subarray(mic.td.length-4096),ctx.sampleRate);
     if(f>0){
       const midi=69+12*Math.log2(f/440); hist.push(midi); if(hist.length>5) hist.shift();
@@ -139,6 +140,7 @@ function tunerFrame(){
     } else hist=[];
     if(tCents!=null && performance.now()-lastHeard>1500) resetTunerDisplay();
   }
+  if(tCents==null && waveFlat) return; waveFlat=tCents==null; // nothing heard: draw the flat string once, not every frame
   const amp=tCents==null?0:Math.min(30,Math.abs(tCents)*0.6);
   phase+=tCents==null?0:0.12+Math.min(0.4,Math.abs(tCents)/200);
   const mk=$('#tMark'); if(mk){ mk.classList.toggle('on',tCents!=null); if(tCents!=null){ mk.style.left=(50+clamp(tCents,-50,50))+'%'; mk.style.background=Math.abs(tCents)<=5?'var(--good)':'var(--koa)'; } }
@@ -158,7 +160,7 @@ $$('#pTabs button').forEach(b=>b.onclick=()=>{ S.ptab=b.dataset.p; save(); rende
 
 /* chords */
 let checking=false;
-const GROUPS=[['Start here',['C','Am','F','G']],['Next',['G7','C7','Em','Dm','D','A','A7','E7']],['Further along',['D7','F7','Am7','Cmaj7','B♭','Bm','E','Gm','Cm']],['More shapes',['Em7','Dm7','Gm7','Bm7','F♯m','C♯m','B7','B♭7','Fm','E♭','C♯','F♯']]];
+const GROUPS=[['Start here',['C','Am','F','G']],['Next',['G7','C7','Em','Dm','D','A','A7','E7']],['Further along',['D7','F7','Am7','Cmaj7','B♭','Bm','E','Gm','Cm']],['More shapes',['Em7','Dm7','Gm7','Bm7','F♯m','C♯m','B7','B♭7','Fm','E♭','C♯','F♯','A♭','B','A♭7','C♯7','E♭7','F♯7','B♭m','E♭m','A♭m']]];
 function renderChords(){
   const c=CHORDS[S.sel]||CHORDS[0], nm=chordName(c), bari=TUNINGS[S.tuning].shift?` On baritone this shape sounds as ${nm}.`:'';
   const steps=chordSteps(c);

@@ -5,7 +5,7 @@ function today(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).p
 
 const DEFAULTS={tuning:'high',lefty:false,theme:null,learned:[],bests:{},hist:{},mins:{},songBest:{},songBpm:{},manual:[],secs:{},tunedOnce:false,
   userSongs:[],tab:'learn',bpm:80,pattern:2,pick:0,mode:'strum',sel:0,speedUp:false,target:120,hearPat:false,patChord:'C',
-  pairA:'C',pairB:'G7',autoCount:false,ptab:'chords',tunedDay:'',onboarded:false,goal:'',uke:'',songWait:true,pmode:'count',paceLevel:0,paceBacking:true,cal:null,sens:0,songKey:{},setlists:[],pairDay:{},songDay:{},timing:false,plan:null,songListen:false,songBacking:true,songSpeed:false};
+  pairA:'C',pairB:'G7',autoCount:false,ptab:'chords',tunedDay:'',onboarded:false,goal:'',uke:'',songWait:true,pmode:'count',paceLevel:0,paceBacking:true,cal:null,sens:0,songKey:{},setlists:[],pairDay:{},songDay:{},timing:false,plan:null,songListen:false,songBacking:true,songSpeed:false,keepNote:'',backupDay:''};
 const S=Object.assign(JSON.parse(JSON.stringify(DEFAULTS)),store.get('state',{}));
 let saveT=null; function save(){clearTimeout(saveT);saveT=setTimeout(()=>store.set('state',S),200)}
 // carry over v0.1 data once
@@ -63,7 +63,16 @@ const CHORDS=[
   {n:'Gm7',f:[0,2,1,1],g:[0,2,1,1],bar:{f:1,a:2,b:3}},
   {n:'C♯',f:[1,1,1,4],g:[1,1,1,4],bar:{f:1,a:0,b:2}},
   {n:'F♯',f:[3,1,2,1],g:[3,1,2,1],bar:{f:1,a:1,b:3}},
-  {n:'Bm7',f:[2,2,2,2],g:[1,1,1,1],bar:{f:2,a:0,b:3}}
+  {n:'Bm7',f:[2,2,2,2],g:[1,1,1,1],bar:{f:2,a:0,b:3}},
+  {n:'A♭',f:[1,3,4,3],g:[1,2,4,3]},
+  {n:'B',f:[4,3,2,2],g:[3,2,1,1],bar:{f:2,a:2,b:3}},
+  {n:'A♭7',f:[1,3,2,3],g:[1,3,2,4]},
+  {n:'C♯7',f:[1,1,1,2],g:[1,1,1,2],bar:{f:1,a:0,b:2}},
+  {n:'E♭7',f:[3,3,3,4],g:[1,1,1,2],bar:{f:3,a:0,b:2}},
+  {n:'F♯7',f:[3,4,2,4],g:[2,3,1,4]},
+  {n:'B♭m',f:[3,1,1,1],g:[3,1,1,1],bar:{f:1,a:1,b:3}},
+  {n:'E♭m',f:[3,3,2,1],g:[3,4,2,1]},
+  {n:'A♭m',f:[1,3,4,2],g:[1,3,4,2]}
 ];
 const byN=Object.fromEntries(CHORDS.map(c=>[c.n,c]));
 const learned=n=>S.learned.includes(n);
@@ -78,7 +87,11 @@ const pairKey=(a,b)=>[a,b].sort().join('|');
 
 /* audio */
 let ctx=null; const bufCache={};
-function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); return ctx; }
+/* Safari mutes web audio with the ring/silent switch unless the page asks to play like a music app */
+function audioMode(t){ try{ if(navigator.audioSession) navigator.audioSession.type=t; }catch(e){} }
+/* time from scheduling a sound to hearing it: small on desktops, larger on Android, largest over Bluetooth */
+const outLat=()=>ctx?(ctx.baseLatency||0)+(ctx.outputLatency||0):0;
+function ac(){ if(!ctx){ audioMode(mic.stream?'play-and-record':'playback'); ctx=new (window.AudioContext||window.webkitAudioContext)(); } if(ctx.state==='suspended') ctx.resume(); return ctx; }
 function pluckBuf(midi){
   const c=ac(), key=midi+':'+c.sampleRate; if(bufCache[key]) return bufCache[key];
   const sr=c.sampleRate, f=440*Math.pow(2,(midi-69)/12), len=Math.floor(sr*2.2);
@@ -135,14 +148,14 @@ const mic={stream:null,an:null,td:null,fd:null,rms:0,
   },
   async _open(){
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error('nomic');
-    const c=ac();
+    audioMode('play-and-record'); const c=ac();
     this.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
     const src=c.createMediaStreamSource(this.stream); this.an=c.createAnalyser(); this.an.fftSize=8192; this.an.smoothingTimeConstant=0.3; src.connect(this.an);
     this.td=new Float32Array(this.an.fftSize); this.fd=new Float32Array(this.an.frequencyBinCount);
     this.an2=c.createAnalyser(); this.an2.fftSize=2048; src.connect(this.an2); this.td2=new Float32Array(2048);
     $('#micPill').classList.add('on'); onMicChange(); return true;
   },
-  off(){ if(this.stream) this.stream.getTracks().forEach(t=>t.stop()); this.stream=null; this.an=null; this.an2=null; $('#micPill').classList.remove('on'); onMicChange(); }
+  off(){ if(this.stream){ this.stream.getTracks().forEach(t=>t.stop()); audioMode('playback'); } this.stream=null; this.an=null; this.an2=null; $('#micPill').classList.remove('on'); onMicChange(); }
 };
 function micError(e){ if(e&&e.message==='nomic') return 'This browser can\u2019t use the microphone here.';
   if(window.top!==window && e && (e.name==='NotAllowedError'||e.name==='SecurityError')) return 'Koa can\u2019t use the microphone inside another page. Open Koa in its own tab.';
@@ -170,7 +183,7 @@ function template(c){ const key=S.tuning+':'+c.n; if(tplCache[key]) return tplCa
 function sim(a,b){ let d=0,na=0,nb=0; for(let i=0;i<12;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i]} return na&&nb?d/Math.sqrt(na*nb):0; }
 function rankChords(pc){ return CHORDS.map(c=>({c,s:sim(pc,template(c))})).sort((x,y)=>y.s-x.s); }
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const TH={ match:()=>clamp((S.cal?S.cal.match:0.72)-(S.sens||0)*0.05,0.45,0.95), gate:()=>S.cal?S.cal.gate:0.008, onset:()=>S.cal?S.cal.onset:0.02, latency:()=>S.cal&&S.cal.latency!=null?S.cal.latency:0.06 };
+const TH={ match:()=>clamp((S.cal?S.cal.match:0.72)-(S.sens||0)*0.05,0.45,0.95), gate:()=>S.cal?S.cal.gate:0.008, onset:()=>S.cal?S.cal.onset:0.02, latency:()=>S.cal&&S.cal.latency!=null?S.cal.latency:Math.max(0.06,outLat()+0.03) };
 const pcsOf=c=>new Set(notesOf(c).map(m=>m%12));
 function addsOneNote(big,small){ const B=pcsOf(big), A=pcsOf(small); if(B.size!==A.size+1) return false; for(const p of A) if(!B.has(p)) return false; return true; }
 /* A clean chord can top-rank as its seventh or major-seventh cousin, because overtones supply the extra note.
@@ -287,7 +300,27 @@ the [G7]Bible tells me [C]so.`},
 [C]Jingle bells, [C]jingle bells, [C]jingle all the [C]way.
 Oh, what [F]fun it is to [C]ride in a [D7]one-horse open [G7]sleigh, hey!
 [C]Jingle bells, [C]jingle bells, [C]jingle all the [C]way.
-Oh, what [F]fun it is to [C]ride in a [G7]one-horse open [C]sleigh.`}
+Oh, what [F]fun it is to [C]ride in a [G7]one-horse open [C]sleigh.`},
+{id:'wewish',strum:'Waltz',credit:'Traditional English carol',tags:['holiday','kids'],src:`{title: We Wish You a Merry Christmas}
+{time: 3/4}
+{tempo: 100}
+We [C]wish you a merry [F]Christmas, we [D7]wish you a merry [G7]Christmas, we
+[E7]wish you a merry [Am]Christmas and a [F:2]happy [G7:1]New [C]Year.
+
+Oh, [C]bring us some figgy [F]pudding, oh, [D7]bring us some figgy [G7]pudding, oh,
+[E7]bring us some figgy [Am]pudding and a [F:2]cup of [G7:1]good [C]cheer.`},
+{id:'deck',strum:'Down up',credit:'Welsh carol, English words 19th century',tags:['holiday','kids'],src:`{title: Deck the Halls}
+{time: 4/4}
+{tempo: 100}
+[C]Deck the halls with [C]boughs of holly, [G7]fa la la la la, la [C]la la la.
+[C]'Tis the season [C]to be jolly, [G7]fa la la la la, la [C]la la la.
+[G7]Don we now our [C]gay apparel, [D7]fa la la, la la la, [G]la la la.
+[C]Troll the ancient [C]Yuletide carol, [G7]fa la la la la, la [C]la la la.`},
+{id:'gotell',strum:'Down',credit:'African American spiritual, refrain',tags:['hymns','holiday'],src:`{title: Go, Tell It on the Mountain}
+{time: 4/4}
+{tempo: 90}
+[C]Go, tell it on the [C]mountain, [F]over the hills and [C]everywhere;
+[C]go, tell it on the [C]mountain that [G7]Jesus Christ is [C]born.`}
 ];
 function parseSong(text){
   let title='', beats=4, tempo=null, timeSig='', strum=''; const lines=[]; let bars=0;
@@ -373,7 +406,7 @@ const clock={on:false,owner:null,bpm:80,next:0,tick:0,limit:Infinity,iv:null,q:[
   start(owner,bpm,limit,sched,vis,onStop){
     this.stop(); const c=ac(); Object.assign(this,{on:true,owner,bpm,limit,sched,vis,onStop,tick:0,q:[],next:c.currentTime+0.12,hold:null,gate:null});
     this.iv=setInterval(()=>this.run(),25); this.run();
-    const loop=()=>{ if(!this.on) return; let cur=null; while(this.q.length&&this.q[0].t<=ctx.currentTime) cur=this.q.shift(); if(cur) this.vis(cur.i); if(this.on) this.raf=requestAnimationFrame(loop); };
+    const loop=()=>{ if(!this.on) return; let cur=null; while(this.q.length&&this.q[0].t<=ctx.currentTime-outLat()) cur=this.q.shift(); if(cur) this.vis(cur.i); if(this.on) this.raf=requestAnimationFrame(loop); };
     loop();
   },
   run(){ const c=ctx; if(!this.on) return;

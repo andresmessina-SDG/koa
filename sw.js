@@ -1,10 +1,11 @@
 // Keeps a copy of Koa so it opens without a connection.
-// Change the version name whenever you publish a new build, so phones fetch the new copy.
-const CACHE = 'koa-1';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+// build.sh sets the version name from the files, so every new build reaches phones that already have Koa.
+const CACHE = 'koa-3250b10dc4';
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg', './apple-touch-icon.png', './icon-192.png',
+  './fonts/fraunces.woff2', './fonts/instrument-sans.woff2', './fonts/koa-symbols.woff2'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {

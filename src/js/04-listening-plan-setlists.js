@@ -31,7 +31,7 @@ function openCalib(){ if($('#settings').open) $('#settings').close(); cal={step:
 function closeCalib(){ if(cal) cal.cancel=true; cal=null; if(typeof calDlg.close==='function'&&calDlg.open) calDlg.close(); else calDlg.removeAttribute('open'); }
 $('#calClose').onclick=closeCalib; calDlg.addEventListener('close',()=>{ if(cal) cal.cancel=true; cal=null; });
 const CAL_STEPS=[
-  {h:'Calibrate listening',t:'Koa will listen to your room and your ukulele for about twenty seconds, then set its listening to match. Tune up first for the best result.',go:'Start'},
+  {h:'Calibrate listening',t:'Koa will listen to your room and your ukulele for about twenty seconds, then set its listening to match. Tune up first for the best result. Use the phone\u2019s speaker or wired headphones: Bluetooth earbuds switch to call quality when the microphone is on.',go:'Start'},
   {h:'Stay quiet for a moment',t:'Koa is measuring the background sound in your room.',go:null},
   {h:'Strum a C chord',t:'Strum once and let all four strings ring.',go:null,chord:'C'},
   {h:'Now strum G7',t:'Strum once and let it ring.',go:null,chord:'G7'},
@@ -290,12 +290,12 @@ function wireAddPanel(s){
 /* ---------- backup and restore ---------- */
 async function saveBackup(msgEl){
   const data=JSON.stringify({app:'koa',version:4,saved:new Date().toISOString(),state:S},null,1), name=`koa-backup-${today()}.json`;
-  if(window.top===window){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); msgEl.className='note good'; msgEl.textContent='Backup saved to your downloads.'; return; }
+  if(window.top===window){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); S.backupDay=today(); save(); msgEl.className='note good'; msgEl.textContent='Backup saved to your downloads.'; return; }
   copyBackup(msgEl);
 }
 async function copyBackup(msgEl){
   const data=JSON.stringify({app:'koa',version:4,saved:new Date().toISOString(),state:S});
-  try{ await navigator.clipboard.writeText(data); msgEl.className='note good'; msgEl.textContent='Backup copied. Paste it into a note or file to keep it safe.'; }
+  try{ await navigator.clipboard.writeText(data); S.backupDay=today(); save(); msgEl.className='note good'; msgEl.textContent='Backup copied. Paste it into a note or file to keep it safe.'; }
   catch(e){ msgEl.className='note'; msgEl.innerHTML='Copy this text and keep it somewhere safe:<textarea readonly style="min-height:90px;margin-top:8px" id="bkText"></textarea>'; $('#bkText').value=data; $('#bkText').select(); }
 }
 function parseBackup(text){

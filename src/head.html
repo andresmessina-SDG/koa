@@ -10,12 +10,23 @@
 <meta property="og:title" content="Koa: learn the ukulele">
 <meta property="og:description" content="Lessons, songs, chord and rhythm practice, and a tuner. It runs in your browser and works offline.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://andresmessina-sdg.github.io/koa/">
+<meta property="og:image" content="https://andresmessina-sdg.github.io/koa/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* fonts ship with Koa, so it needs no outside requests and works offline from the first visit.
+   koa-symbols holds ♭ ♯ ✓ ⇄ from STIX Two, which neither face has. */
+@font-face{font-family:'Fraunces';src:url(fonts/fraunces.woff2) format('woff2');font-weight:300 600;font-display:swap}
+@font-face{font-family:'Instrument Sans';src:url(fonts/instrument-sans.woff2) format('woff2');font-weight:400 600;font-display:swap}
+@font-face{font-family:'Fraunces';src:url(fonts/koa-symbols.woff2) format('woff2');font-weight:300 600;unicode-range:U+266D-266F,U+2713,U+21C4}
+@font-face{font-family:'Instrument Sans';src:url(fonts/koa-symbols.woff2) format('woff2');font-weight:400 600;unicode-range:U+266D-266F,U+2713,U+21C4}
 :root{
   --paper:#F5EFE4; --sheet:#FBF7F0; --ink:#2B2520; --soft:#5D554B; --faint:#726A61;
   --nylon:#D5CBBA; --rule:#E6DDCF; --koa:#9C5C2A; --koa-soft:rgba(156,92,42,.11); --on-koa:#FBF7F0;
@@ -38,7 +49,7 @@
   --good:#90AF7D; --off:#DD8C6C; --glow:rgba(212,144,79,.07); --grain:.35; --shadow:0 1px 2px rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.25); color-scheme:dark; --dstr:#7D7266; --dfret:#4E453D; --neck:#332C26; --hand:#3B312A; }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
-body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+body{margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
   background:radial-gradient(130% 55% at 50% -12%,var(--glow),transparent 62%) no-repeat,var(--paper)}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--grain);
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .30  0 0 0 0 .18  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
@@ -68,7 +79,8 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:10p
 .icon-btn{width:42px;height:42px;display:inline-grid;place-items:center;border-radius:50%;border:0;background:transparent;color:var(--soft)}
 .icon-btn:hover{color:var(--ink);background:var(--koa-soft)}
 .icon-btn[aria-pressed="true"]{color:var(--koa);background:var(--koa-soft)}
-.icon-btn.sm{width:36px;height:36px}
+.icon-btn.sm{width:36px;height:36px;position:relative}
+.icon-btn.sm::after{content:"";position:absolute;inset:-6px} /* 48px to the finger, 36px to the eye */
 /* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font-size:15px;font-weight:500;line-height:1.2;transition:transform .12s ease,background .15s}
 .btn:active{transform:scale(.98)}
@@ -280,7 +292,7 @@ body.songmode .transport{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
 .transport .tempo{gap:2px}
 .transport .row{flex-wrap:nowrap}
 /* settings dialog */
-dialog{overflow-y:auto;overscroll-behavior:contain;border:0;padding:0;background:var(--sheet);color:var(--ink);border-radius:26px;width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 40px);box-shadow:0 30px 80px rgba(0,0,0,.25)}
+dialog{overflow-y:auto;overscroll-behavior:contain;border:0;padding:0;background:var(--sheet);color:var(--ink);border-radius:26px;width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);box-shadow:0 30px 80px rgba(0,0,0,.25)}
 dialog::backdrop{background:rgba(30,20,10,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 dialog[open]{animation:rise .25s ease}
 .dlg-h{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 6px 26px}
@@ -292,7 +304,7 @@ dialog[open]{animation:rise .25s ease}
 /* stage */
 #stage{display:none;position:relative;z-index:1}
 body.stage .app,body.stage nav.dock{display:none}
-body.stage #stage{display:flex;flex-direction:column;min-height:100vh;padding:22px 30px 30px;max-width:980px;margin:0 auto}
+body.stage #stage{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding:22px 30px 30px;max-width:980px;margin:0 auto}
 #stage .stop{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--soft)}
 #stTitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #stage .stop .row{flex-wrap:nowrap;gap:6px}
@@ -444,6 +456,16 @@ body.onboard nav.dock,body.onboard header.top .hright{display:none}
 @media (max-width:380px),(max-height:700px){ #rPatterns{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-18px;padding-right:18px;margin-bottom:14px} #rPatterns::-webkit-scrollbar{display:none} #rPatterns button{flex:0 0 auto} .seg2{margin-bottom:12px} .grid8 .cell{padding:6px 0} .grid8 .ar{font-size:30px} }
 @media (max-height:700px){ .tuner-note{font-size:88px;margin:4px 0 4px} .wave{height:56px;margin:10px 0 16px} .strings button{padding:12px 0 9px;font-size:24px} .strings{margin-bottom:18px}
   #pv-changes .lede{display:none} .ringwrap{width:min(156px,42vw)} .ringc b{font-size:54px} .trainer{margin-bottom:14px} .ph{margin-bottom:14px} .t-display{font-size:32px} }
+/* new version and keep-your-progress notes */
+.update{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);z-index:30;width:min(420px,calc(100vw - 24px));display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px 8px 16px;border-radius:18px;font-size:14px;
+  background:color-mix(in srgb,var(--sheet) 94%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--shadow),inset 0 0 0 1px var(--rule)}
+.update .btn{padding:8px 14px;font-size:14px}
+.keepnote{margin:0 0 18px;padding:16px 18px 12px;border-radius:20px;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--rule)}
+.keepnote h3{font-size:14px;font-weight:500;margin:0 0 6px}
+.keepnote p{font-size:14px;color:var(--soft)}
+.keepnote .row{margin-top:8px;gap:4px}
+.keepnote .btn{padding:8px 12px;font-size:14px}
+.keepnote .note:empty{min-height:0;margin:0}
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important} }
 </style>
 </head>
