@@ -120,8 +120,9 @@ $('#micBtn').onclick=async()=>{
   catch(e){ $('#tMsg').textContent=micError(e)+' Tune by ear below instead.'; $('#earBox').open=true; }
 };
 function resetTunerDisplay(){ tCents=null; hist=[]; $('#tNote').textContent='–'; $('#tNote').style.color=''; $('#tNote').classList.add('idle'); $('#tCents').textContent=mic.stream?'Play a string':'Waiting to listen'; $$('#tStrings button').forEach(b=>b.classList.remove('hit')); }
-function tunerFrame(){
-  if(mic.an && frame%2===0){
+let waveFlat=false;
+function tunerFrame(tick){
+  if(tick && mic.an && frame%2===0){
     const f=autoCorrelate(mic.td.subarray(mic.td.length-4096),ctx.sampleRate);
     if(f>0){
       const midi=69+12*Math.log2(f/440); hist.push(midi); if(hist.length>5) hist.shift();
@@ -139,6 +140,7 @@ function tunerFrame(){
     } else hist=[];
     if(tCents!=null && performance.now()-lastHeard>1500) resetTunerDisplay();
   }
+  if(tCents==null && waveFlat) return; waveFlat=tCents==null; // nothing heard: draw the flat string once, not every frame
   const amp=tCents==null?0:Math.min(30,Math.abs(tCents)*0.6);
   phase+=tCents==null?0:0.12+Math.min(0.4,Math.abs(tCents)/200);
   const mk=$('#tMark'); if(mk){ mk.classList.toggle('on',tCents!=null); if(tCents!=null){ mk.style.left=(50+clamp(tCents,-50,50))+'%'; mk.style.background=Math.abs(tCents)<=5?'var(--good)':'var(--koa)'; } }

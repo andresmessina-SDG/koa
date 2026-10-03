@@ -17,6 +17,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -48,7 +49,7 @@
   --good:#90AF7D; --off:#DD8C6C; --glow:rgba(212,144,79,.07); --grain:.35; --shadow:0 1px 2px rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.25); color-scheme:dark; --dstr:#7D7266; --dfret:#4E453D; --neck:#332C26; --hand:#3B312A; }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
-body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+body{margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
   background:radial-gradient(130% 55% at 50% -12%,var(--glow),transparent 62%) no-repeat,var(--paper)}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--grain);
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .30  0 0 0 0 .18  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
@@ -78,7 +79,8 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:10p
 .icon-btn{width:42px;height:42px;display:inline-grid;place-items:center;border-radius:50%;border:0;background:transparent;color:var(--soft)}
 .icon-btn:hover{color:var(--ink);background:var(--koa-soft)}
 .icon-btn[aria-pressed="true"]{color:var(--koa);background:var(--koa-soft)}
-.icon-btn.sm{width:36px;height:36px}
+.icon-btn.sm{width:36px;height:36px;position:relative}
+.icon-btn.sm::after{content:"";position:absolute;inset:-6px} /* 48px to the finger, 36px to the eye */
 /* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font-size:15px;font-weight:500;line-height:1.2;transition:transform .12s ease,background .15s}
 .btn:active{transform:scale(.98)}
@@ -290,7 +292,7 @@ body.songmode .transport{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
 .transport .tempo{gap:2px}
 .transport .row{flex-wrap:nowrap}
 /* settings dialog */
-dialog{overflow-y:auto;overscroll-behavior:contain;border:0;padding:0;background:var(--sheet);color:var(--ink);border-radius:26px;width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 40px);box-shadow:0 30px 80px rgba(0,0,0,.25)}
+dialog{overflow-y:auto;overscroll-behavior:contain;border:0;padding:0;background:var(--sheet);color:var(--ink);border-radius:26px;width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);box-shadow:0 30px 80px rgba(0,0,0,.25)}
 dialog::backdrop{background:rgba(30,20,10,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 dialog[open]{animation:rise .25s ease}
 .dlg-h{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 6px 26px}
@@ -302,7 +304,7 @@ dialog[open]{animation:rise .25s ease}
 /* stage */
 #stage{display:none;position:relative;z-index:1}
 body.stage .app,body.stage nav.dock{display:none}
-body.stage #stage{display:flex;flex-direction:column;min-height:100vh;padding:22px 30px 30px;max-width:980px;margin:0 auto}
+body.stage #stage{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding:22px 30px 30px;max-width:980px;margin:0 auto}
 #stage .stop{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--soft)}
 #stTitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #stage .stop .row{flex-wrap:nowrap;gap:6px}
@@ -682,6 +684,8 @@ const pairKey=(a,b)=>[a,b].sort().join('|');
 let ctx=null; const bufCache={};
 /* Safari mutes web audio with the ring/silent switch unless the page asks to play like a music app */
 function audioMode(t){ try{ if(navigator.audioSession) navigator.audioSession.type=t; }catch(e){} }
+/* time from scheduling a sound to hearing it: small on desktops, larger on Android, largest over Bluetooth */
+const outLat=()=>ctx?(ctx.baseLatency||0)+(ctx.outputLatency||0):0;
 function ac(){ if(!ctx){ audioMode(mic.stream?'play-and-record':'playback'); ctx=new (window.AudioContext||window.webkitAudioContext)(); } if(ctx.state==='suspended') ctx.resume(); return ctx; }
 function pluckBuf(midi){
   const c=ac(), key=midi+':'+c.sampleRate; if(bufCache[key]) return bufCache[key];
@@ -774,7 +778,7 @@ function template(c){ const key=S.tuning+':'+c.n; if(tplCache[key]) return tplCa
 function sim(a,b){ let d=0,na=0,nb=0; for(let i=0;i<12;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i]} return na&&nb?d/Math.sqrt(na*nb):0; }
 function rankChords(pc){ return CHORDS.map(c=>({c,s:sim(pc,template(c))})).sort((x,y)=>y.s-x.s); }
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const TH={ match:()=>clamp((S.cal?S.cal.match:0.72)-(S.sens||0)*0.05,0.45,0.95), gate:()=>S.cal?S.cal.gate:0.008, onset:()=>S.cal?S.cal.onset:0.02, latency:()=>S.cal&&S.cal.latency!=null?S.cal.latency:0.06 };
+const TH={ match:()=>clamp((S.cal?S.cal.match:0.72)-(S.sens||0)*0.05,0.45,0.95), gate:()=>S.cal?S.cal.gate:0.008, onset:()=>S.cal?S.cal.onset:0.02, latency:()=>S.cal&&S.cal.latency!=null?S.cal.latency:Math.max(0.06,outLat()+0.03) };
 const pcsOf=c=>new Set(notesOf(c).map(m=>m%12));
 function addsOneNote(big,small){ const B=pcsOf(big), A=pcsOf(small); if(B.size!==A.size+1) return false; for(const p of A) if(!B.has(p)) return false; return true; }
 /* A clean chord can top-rank as its seventh or major-seventh cousin, because overtones supply the extra note.
@@ -997,7 +1001,7 @@ const clock={on:false,owner:null,bpm:80,next:0,tick:0,limit:Infinity,iv:null,q:[
   start(owner,bpm,limit,sched,vis,onStop){
     this.stop(); const c=ac(); Object.assign(this,{on:true,owner,bpm,limit,sched,vis,onStop,tick:0,q:[],next:c.currentTime+0.12,hold:null,gate:null});
     this.iv=setInterval(()=>this.run(),25); this.run();
-    const loop=()=>{ if(!this.on) return; let cur=null; while(this.q.length&&this.q[0].t<=ctx.currentTime) cur=this.q.shift(); if(cur) this.vis(cur.i); if(this.on) this.raf=requestAnimationFrame(loop); };
+    const loop=()=>{ if(!this.on) return; let cur=null; while(this.q.length&&this.q[0].t<=ctx.currentTime-outLat()) cur=this.q.shift(); if(cur) this.vis(cur.i); if(this.on) this.raf=requestAnimationFrame(loop); };
     loop();
   },
   run(){ const c=ctx; if(!this.on) return;
@@ -1132,8 +1136,9 @@ $('#micBtn').onclick=async()=>{
   catch(e){ $('#tMsg').textContent=micError(e)+' Tune by ear below instead.'; $('#earBox').open=true; }
 };
 function resetTunerDisplay(){ tCents=null; hist=[]; $('#tNote').textContent='–'; $('#tNote').style.color=''; $('#tNote').classList.add('idle'); $('#tCents').textContent=mic.stream?'Play a string':'Waiting to listen'; $$('#tStrings button').forEach(b=>b.classList.remove('hit')); }
-function tunerFrame(){
-  if(mic.an && frame%2===0){
+let waveFlat=false;
+function tunerFrame(tick){
+  if(tick && mic.an && frame%2===0){
     const f=autoCorrelate(mic.td.subarray(mic.td.length-4096),ctx.sampleRate);
     if(f>0){
       const midi=69+12*Math.log2(f/440); hist.push(midi); if(hist.length>5) hist.shift();
@@ -1151,6 +1156,7 @@ function tunerFrame(){
     } else hist=[];
     if(tCents!=null && performance.now()-lastHeard>1500) resetTunerDisplay();
   }
+  if(tCents==null && waveFlat) return; waveFlat=tCents==null; // nothing heard: draw the flat string once, not every frame
   const amp=tCents==null?0:Math.min(30,Math.abs(tCents)*0.6);
   phase+=tCents==null?0:0.12+Math.min(0.4,Math.abs(tCents)/200);
   const mk=$('#tMark'); if(mk){ mk.classList.toggle('on',tCents!=null); if(tCents!=null){ mk.style.left=(50+clamp(tCents,-50,50))+'%'; mk.style.background=Math.abs(tCents)<=5?'var(--good)':'var(--koa)'; } }
@@ -1417,7 +1423,7 @@ function playSong(s){
     if(R.loop && b===R.loop.to && tick===starts[b]+bars[b].beats*2-1) return starts[R.loop.from];
   },songVis,endSong);
   clock.gate=(tick,time)=>{ const R=songRun; if(!R||!S.songWait||!R.holdAt.has(tick)||R.released.has(tick)) return false;
-    R.wait=tick; const b=R.barAt(tick); setTimeout(()=>showWait(b),Math.max(0,(time-ctx.currentTime)*1000)); return true; };
+    R.wait=tick; const b=R.barAt(tick); setTimeout(()=>showWait(b),Math.max(0,(time-ctx.currentTime+outLat())*1000)); return true; };
   setPlay($('#sPlay'),true,'Stop','Play along'); setPlay($('#stPlay'),true,'Stop','Play along');
 }
 function songVis(tick){
@@ -1527,7 +1533,7 @@ function openCalib(){ if($('#settings').open) $('#settings').close(); cal={step:
 function closeCalib(){ if(cal) cal.cancel=true; cal=null; if(typeof calDlg.close==='function'&&calDlg.open) calDlg.close(); else calDlg.removeAttribute('open'); }
 $('#calClose').onclick=closeCalib; calDlg.addEventListener('close',()=>{ if(cal) cal.cancel=true; cal=null; });
 const CAL_STEPS=[
-  {h:'Calibrate listening',t:'Koa will listen to your room and your ukulele for about twenty seconds, then set its listening to match. Tune up first for the best result.',go:'Start'},
+  {h:'Calibrate listening',t:'Koa will listen to your room and your ukulele for about twenty seconds, then set its listening to match. Tune up first for the best result. Use the phone\u2019s speaker or wired headphones: Bluetooth earbuds switch to call quality when the microphone is on.',go:'Start'},
   {h:'Stay quiet for a moment',t:'Koa is measuring the background sound in your room.',go:null},
   {h:'Strum a C chord',t:'Strum once and let all four strings ring.',go:null,chord:'C'},
   {h:'Now strum G7',t:'Strum once and let it ring.',go:null,chord:'G7'},
@@ -2206,7 +2212,7 @@ function renderSettings(){
     <div class="setrow"><h3>Tuning</h3><div class="chips" id="stTun">${Object.entries(TUNINGS).map(([k,v])=>`<button data-v="${k}" aria-pressed="${S.tuning===k}">${{high:'High G',low:'Low G',bari:'Baritone'}[k]}</button>`).join('')}</div></div>
     <div class="setrow"><h3>Playing hand</h3><div class="chips" id="stHand"><button data-v="r" aria-pressed="${!S.lefty}">Right-handed</button><button data-v="l" aria-pressed="${S.lefty}">Left-handed</button></div></div>
     <div class="setrow"><h3>Appearance</h3><div class="chips" id="stTheme"><button data-v="auto" aria-pressed="${t==='auto'}">Match device</button><button data-v="light" aria-pressed="${t==='light'}">Day</button><button data-v="dark" aria-pressed="${t==='dark'}">Night</button></div></div>
-    <div class="setrow"><h3>Listening</h3><p class="small soft" style="margin-bottom:10px">${S.cal?`Calibrated on ${S.cal.date.split('-').slice(1).map(Number).join('/')}.`:'Not calibrated yet. Calibrating makes chord checks and rhythm timing more accurate.'}</p>
+    <div class="setrow"><h3>Listening</h3><p class="small soft" style="margin-bottom:10px">${S.cal?`Calibrated on ${S.cal.date.split('-').slice(1).map(Number).join('/')}.`:'Not calibrated yet. Calibrating makes chord checks and rhythm timing more accurate.'} For listening, use the phone\u2019s speaker or wired headphones. Bluetooth earbuds switch to call quality and use their own microphone.</p>
       <button class="btn line" id="stCal">${icon('mic',16)}${S.cal?'Calibrate again':'Calibrate listening'}</button>
       <h3 style="margin-top:16px">How strict</h3><div class="chips" id="stSens"><button data-v="1" aria-pressed="${S.sens===1}">Forgiving</button><button data-v="0" aria-pressed="${!S.sens}">Normal</button><button data-v="-1" aria-pressed="${S.sens===-1}">Strict</button></div></div>
     <div class="setrow"><h3>Back up your progress</h3><p class="small soft" style="margin-bottom:10px">Koa saves your progress in this browser only. Keep a backup so you never lose it.</p>
@@ -2233,14 +2239,38 @@ try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyT
 
 /* one listening loop */
 function onMicChange(){ if(curTab==='tune') renderTune(); if(!mic.stream){ resetTunerDisplay(); $('#tMsg').textContent='Tap a string to hear its reference note.'; } }
-function mainLoop(){
-  frame++;
-  handFrame();
-  if(mic.an){ readTime(); onset.frame(); songWaitListen(); if(cal){ const l=$('#calLevel'); if(l) l.style.width=Math.min(100,Math.max(2,Math.sqrt(mic.rms)*260))+'%'; } if(curTab==='tune') tunerFrame(); else { practiceListenFrame(); songListenFrame(); } }
-  else if(curTab==='tune') tunerFrame();
+/* Drawing follows the screen, up to 120 times a second on phones like the Pixel 8a.
+   Listening runs about 60 times a second on any screen, so its frame counts mean the same everywhere and a fast screen doesn't double the work. */
+let lastTick=-1e9;
+function mainLoop(t){
+  const tick=t-lastTick>=12; if(tick){ lastTick=t; frame++; }
+  handFrame(); syncHistory();
+  if(mic.an){ onset.frame(); if(tick){ readTime(); songWaitListen(); if(cal){ const l=$('#calLevel'); if(l) l.style.width=Math.min(100,Math.max(2,Math.sqrt(mic.rms)*260))+'%'; } if(curTab!=='tune'){ practiceListenFrame(); songListenFrame(); } } }
+  if(curTab==='tune') tunerFrame(tick);
   requestAnimationFrame(mainLoop);
 }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) return; if(clock.on) clock.stop(); mic.off(); });
+
+/* Android back: each step into Koa (a tab other than Learn, a song, a setlist, the editor, Lesson zero,
+   a welcome question, stage view) adds a history entry, and back climbs out one step at a time. */
+function viewDepth(){
+  const d=(document.body.classList.contains('stage')?1:0)+($$('dialog[open]').length?1:0);
+  if(curTab==='learn') return d+(!S.onboarded?wStep:introStep!=null?introStep+1:0);
+  return d+1+(curTab==='songs'?(openSet&&songFilter==='sets'?1:0)+(openSong||editing?1:0):0);
+}
+function goUp(){
+  const open=$$('dialog[open]'); if(open.length){ open.forEach(d=>d.id==='calib'?closeCalib():closeSettings()); return; }
+  if(document.body.classList.contains('stage')) return $('#stExit').click();
+  if(curTab==='learn'){ const b=!S.onboarded?$('#wBack'):introStep!=null?($('#iBack')||$('#iClose')):null; if(b) b.click(); return; }
+  if(curTab==='songs'){ const b=$('#eBack')||$('#sBack')||$('#setBack'); if(b) return b.click(); }
+  show('learn');
+}
+let hDepth=(history.state&&history.state.koa)||0, hPending=false;
+function syncHistory(){ if(hPending) return; const d=viewDepth();
+  if(d>hDepth){ for(let i=hDepth+1;i<=d;i++) history.pushState({koa:i},''); hDepth=d; }
+  else if(d<hDepth){ hPending=true; history.go(d-hDepth); } }
+addEventListener('popstate',e=>{ const nd=(e.state&&e.state.koa)||0; if(hPending){ hPending=false; hDepth=nd; return; }
+  hDepth=nd; for(let n=0;n<8&&viewDepth()>nd;n++){ const was=viewDepth(); goUp(); if(viewDepth()>=was) break; } });
 
 /* keep the screen on while Koa plays, listens, or shows the stage */
 let wake=null, wakeBusy=false;
@@ -2253,10 +2283,12 @@ setInterval(async()=>{ if(wakeBusy||!navigator.wakeLock) return; const want=!doc
 const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const installed=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
 let kept=false; try{ navigator.storage.persisted().then(p=>{ kept=p; }); }catch(e){}
-function askToKeep(){ if(kept||store.get('persistAsked',false)||!hasProgress(S)) return; store.set('persistAsked',true);
+/* Chrome usually agrees to keep an installed app's data, so ask again whenever Koa runs installed */
+function askToKeep(){ if(kept||!hasProgress(S)||(store.get('persistAsked',false)&&!installed())) return; store.set('persistAsked',true);
   try{ navigator.storage.persist().then(p=>{ kept=p; }); }catch(e){} }
 function keepNote(){
   if(window.top!==window||!hasProgress(S)||(S.keepNote&&dayDiff(today(),S.keepNote)<30)) return '';
+  if(installPrompt&&!installed()) return `<div class="keepnote"><h3>Install Koa</h3><p>Install Koa to open it from your home screen like an app. It works offline, and your browser keeps its progress more reliably.</p><div class="row"><button class="btn primary" id="knInstall">Install</button><button class="btn quiet" id="knDone">Not now</button></div></div>`;
   if(IOS&&!installed()) return `<div class="keepnote"><h3>Keep your progress</h3><p>Safari clears what a website has saved if you don’t open it for seven days. To keep your progress, add Koa to your Home Screen: tap Share, then Add to Home Screen.</p><div class="row"><button class="btn quiet" id="knDone">Got it</button></div></div>`;
   const days=Object.keys(S.mins).filter(k=>S.mins[k]>=30).length;
   if(kept||days<3||(S.backupDay&&dayDiff(today(),S.backupDay)<30)) return '';
@@ -2264,12 +2296,17 @@ function keepNote(){
 }
 function wireKeepNote(){
   const d=$('#knDone'); if(d) d.onclick=()=>{ S.keepNote=today(); save(); renderLearn(); };
+  const i=$('#knInstall'); if(i) i.onclick=async()=>{ const p=installPrompt; installPrompt=null; try{ await p.prompt(); await p.userChoice; }catch(e){} renderLearn(); };
   const s=$('#knSave'); if(s) s.onclick=async()=>{ await saveBackup($('#knMsg')); s.remove(); const dn=$('#knDone'); if(dn) dn.textContent='Done'; };
 }
 
+/* Chrome on Android offers installing; keep the offer for the Install button */
+let installPrompt=null;
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installPrompt=e; if(curTab==='learn'&&S.onboarded&&introStep==null) renderLearn(); });
+addEventListener('appinstalled',()=>{ installPrompt=null; askToKeep(); if(curTab==='learn'&&S.onboarded&&introStep==null) renderLearn(); });
+
 /* offline install when served with its service worker */
 if('serviceWorker' in navigator && document.querySelector('meta[name="koa-offline"]')){
-  const l=document.createElement('link'); l.rel='manifest'; l.href='manifest.webmanifest'; document.head.appendChild(l);
   const hadSW=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(hadSW) $('#updNote').hidden=false; });
   $('#updReload').onclick=()=>location.reload();

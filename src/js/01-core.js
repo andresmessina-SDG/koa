@@ -89,6 +89,8 @@ const pairKey=(a,b)=>[a,b].sort().join('|');
 let ctx=null; const bufCache={};
 /* Safari mutes web audio with the ring/silent switch unless the page asks to play like a music app */
 function audioMode(t){ try{ if(navigator.audioSession) navigator.audioSession.type=t; }catch(e){} }
+/* time from scheduling a sound to hearing it: small on desktops, larger on Android, largest over Bluetooth */
+const outLat=()=>ctx?(ctx.baseLatency||0)+(ctx.outputLatency||0):0;
 function ac(){ if(!ctx){ audioMode(mic.stream?'play-and-record':'playback'); ctx=new (window.AudioContext||window.webkitAudioContext)(); } if(ctx.state==='suspended') ctx.resume(); return ctx; }
 function pluckBuf(midi){
   const c=ac(), key=midi+':'+c.sampleRate; if(bufCache[key]) return bufCache[key];
@@ -181,7 +183,7 @@ function template(c){ const key=S.tuning+':'+c.n; if(tplCache[key]) return tplCa
 function sim(a,b){ let d=0,na=0,nb=0; for(let i=0;i<12;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i]} return na&&nb?d/Math.sqrt(na*nb):0; }
 function rankChords(pc){ return CHORDS.map(c=>({c,s:sim(pc,template(c))})).sort((x,y)=>y.s-x.s); }
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const TH={ match:()=>clamp((S.cal?S.cal.match:0.72)-(S.sens||0)*0.05,0.45,0.95), gate:()=>S.cal?S.cal.gate:0.008, onset:()=>S.cal?S.cal.onset:0.02, latency:()=>S.cal&&S.cal.latency!=null?S.cal.latency:0.06 };
+const TH={ match:()=>clamp((S.cal?S.cal.match:0.72)-(S.sens||0)*0.05,0.45,0.95), gate:()=>S.cal?S.cal.gate:0.008, onset:()=>S.cal?S.cal.onset:0.02, latency:()=>S.cal&&S.cal.latency!=null?S.cal.latency:Math.max(0.06,outLat()+0.03) };
 const pcsOf=c=>new Set(notesOf(c).map(m=>m%12));
 function addsOneNote(big,small){ const B=pcsOf(big), A=pcsOf(small); if(B.size!==A.size+1) return false; for(const p of A) if(!B.has(p)) return false; return true; }
 /* A clean chord can top-rank as its seventh or major-seventh cousin, because overtones supply the extra note.
@@ -404,7 +406,7 @@ const clock={on:false,owner:null,bpm:80,next:0,tick:0,limit:Infinity,iv:null,q:[
   start(owner,bpm,limit,sched,vis,onStop){
     this.stop(); const c=ac(); Object.assign(this,{on:true,owner,bpm,limit,sched,vis,onStop,tick:0,q:[],next:c.currentTime+0.12,hold:null,gate:null});
     this.iv=setInterval(()=>this.run(),25); this.run();
-    const loop=()=>{ if(!this.on) return; let cur=null; while(this.q.length&&this.q[0].t<=ctx.currentTime) cur=this.q.shift(); if(cur) this.vis(cur.i); if(this.on) this.raf=requestAnimationFrame(loop); };
+    const loop=()=>{ if(!this.on) return; let cur=null; while(this.q.length&&this.q[0].t<=ctx.currentTime-outLat()) cur=this.q.shift(); if(cur) this.vis(cur.i); if(this.on) this.raf=requestAnimationFrame(loop); };
     loop();
   },
   run(){ const c=ctx; if(!this.on) return;

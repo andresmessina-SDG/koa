@@ -180,7 +180,7 @@ function playSong(s){
     if(R.loop && b===R.loop.to && tick===starts[b]+bars[b].beats*2-1) return starts[R.loop.from];
   },songVis,endSong);
   clock.gate=(tick,time)=>{ const R=songRun; if(!R||!S.songWait||!R.holdAt.has(tick)||R.released.has(tick)) return false;
-    R.wait=tick; const b=R.barAt(tick); setTimeout(()=>showWait(b),Math.max(0,(time-ctx.currentTime)*1000)); return true; };
+    R.wait=tick; const b=R.barAt(tick); setTimeout(()=>showWait(b),Math.max(0,(time-ctx.currentTime+outLat())*1000)); return true; };
   setPlay($('#sPlay'),true,'Stop','Play along'); setPlay($('#stPlay'),true,'Stop','Play along');
 }
 function songVis(tick){

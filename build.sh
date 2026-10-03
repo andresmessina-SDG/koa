@@ -8,6 +8,6 @@ cd "$(dirname "$0")"
   for f in src/js/*.js; do cat "$f"; done
 } > index.html
 # Name the offline cache after the files, so phones that have Koa notice the new build.
-v=$(cat index.html manifest.webmanifest icon.svg apple-touch-icon.png fonts/*.woff2 | sha256sum | cut -c1-10)
+v=$(cat index.html manifest.webmanifest icon.svg *.png fonts/*.woff2 | sha256sum | cut -c1-10)
 sed -i "s/^const CACHE = .*/const CACHE = 'koa-$v';/" sw.js
 echo "Built index.html, cache koa-$v"

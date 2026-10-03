@@ -31,7 +31,7 @@ function openCalib(){ if($('#settings').open) $('#settings').close(); cal={step:
 function closeCalib(){ if(cal) cal.cancel=true; cal=null; if(typeof calDlg.close==='function'&&calDlg.open) calDlg.close(); else calDlg.removeAttribute('open'); }
 $('#calClose').onclick=closeCalib; calDlg.addEventListener('close',()=>{ if(cal) cal.cancel=true; cal=null; });
 const CAL_STEPS=[
-  {h:'Calibrate listening',t:'Koa will listen to your room and your ukulele for about twenty seconds, then set its listening to match. Tune up first for the best result.',go:'Start'},
+  {h:'Calibrate listening',t:'Koa will listen to your room and your ukulele for about twenty seconds, then set its listening to match. Tune up first for the best result. Use the phone\u2019s speaker or wired headphones: Bluetooth earbuds switch to call quality when the microphone is on.',go:'Start'},
   {h:'Stay quiet for a moment',t:'Koa is measuring the background sound in your room.',go:null},
   {h:'Strum a C chord',t:'Strum once and let all four strings ring.',go:null,chord:'C'},
   {h:'Now strum G7',t:'Strum once and let it ring.',go:null,chord:'G7'},

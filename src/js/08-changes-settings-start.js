@@ -92,7 +92,7 @@ function renderSettings(){
     <div class="setrow"><h3>Tuning</h3><div class="chips" id="stTun">${Object.entries(TUNINGS).map(([k,v])=>`<button data-v="${k}" aria-pressed="${S.tuning===k}">${{high:'High G',low:'Low G',bari:'Baritone'}[k]}</button>`).join('')}</div></div>
     <div class="setrow"><h3>Playing hand</h3><div class="chips" id="stHand"><button data-v="r" aria-pressed="${!S.lefty}">Right-handed</button><button data-v="l" aria-pressed="${S.lefty}">Left-handed</button></div></div>
     <div class="setrow"><h3>Appearance</h3><div class="chips" id="stTheme"><button data-v="auto" aria-pressed="${t==='auto'}">Match device</button><button data-v="light" aria-pressed="${t==='light'}">Day</button><button data-v="dark" aria-pressed="${t==='dark'}">Night</button></div></div>
-    <div class="setrow"><h3>Listening</h3><p class="small soft" style="margin-bottom:10px">${S.cal?`Calibrated on ${S.cal.date.split('-').slice(1).map(Number).join('/')}.`:'Not calibrated yet. Calibrating makes chord checks and rhythm timing more accurate.'}</p>
+    <div class="setrow"><h3>Listening</h3><p class="small soft" style="margin-bottom:10px">${S.cal?`Calibrated on ${S.cal.date.split('-').slice(1).map(Number).join('/')}.`:'Not calibrated yet. Calibrating makes chord checks and rhythm timing more accurate.'} For listening, use the phone\u2019s speaker or wired headphones. Bluetooth earbuds switch to call quality and use their own microphone.</p>
       <button class="btn line" id="stCal">${icon('mic',16)}${S.cal?'Calibrate again':'Calibrate listening'}</button>
       <h3 style="margin-top:16px">How strict</h3><div class="chips" id="stSens"><button data-v="1" aria-pressed="${S.sens===1}">Forgiving</button><button data-v="0" aria-pressed="${!S.sens}">Normal</button><button data-v="-1" aria-pressed="${S.sens===-1}">Strict</button></div></div>
     <div class="setrow"><h3>Back up your progress</h3><p class="small soft" style="margin-bottom:10px">Koa saves your progress in this browser only. Keep a backup so you never lose it.</p>
@@ -119,14 +119,38 @@ try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyT
 
 /* one listening loop */
 function onMicChange(){ if(curTab==='tune') renderTune(); if(!mic.stream){ resetTunerDisplay(); $('#tMsg').textContent='Tap a string to hear its reference note.'; } }
-function mainLoop(){
-  frame++;
-  handFrame();
-  if(mic.an){ readTime(); onset.frame(); songWaitListen(); if(cal){ const l=$('#calLevel'); if(l) l.style.width=Math.min(100,Math.max(2,Math.sqrt(mic.rms)*260))+'%'; } if(curTab==='tune') tunerFrame(); else { practiceListenFrame(); songListenFrame(); } }
-  else if(curTab==='tune') tunerFrame();
+/* Drawing follows the screen, up to 120 times a second on phones like the Pixel 8a.
+   Listening runs about 60 times a second on any screen, so its frame counts mean the same everywhere and a fast screen doesn't double the work. */
+let lastTick=-1e9;
+function mainLoop(t){
+  const tick=t-lastTick>=12; if(tick){ lastTick=t; frame++; }
+  handFrame(); syncHistory();
+  if(mic.an){ onset.frame(); if(tick){ readTime(); songWaitListen(); if(cal){ const l=$('#calLevel'); if(l) l.style.width=Math.min(100,Math.max(2,Math.sqrt(mic.rms)*260))+'%'; } if(curTab!=='tune'){ practiceListenFrame(); songListenFrame(); } } }
+  if(curTab==='tune') tunerFrame(tick);
   requestAnimationFrame(mainLoop);
 }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) return; if(clock.on) clock.stop(); mic.off(); });
+
+/* Android back: each step into Koa (a tab other than Learn, a song, a setlist, the editor, Lesson zero,
+   a welcome question, stage view) adds a history entry, and back climbs out one step at a time. */
+function viewDepth(){
+  const d=(document.body.classList.contains('stage')?1:0)+($$('dialog[open]').length?1:0);
+  if(curTab==='learn') return d+(!S.onboarded?wStep:introStep!=null?introStep+1:0);
+  return d+1+(curTab==='songs'?(openSet&&songFilter==='sets'?1:0)+(openSong||editing?1:0):0);
+}
+function goUp(){
+  const open=$$('dialog[open]'); if(open.length){ open.forEach(d=>d.id==='calib'?closeCalib():closeSettings()); return; }
+  if(document.body.classList.contains('stage')) return $('#stExit').click();
+  if(curTab==='learn'){ const b=!S.onboarded?$('#wBack'):introStep!=null?($('#iBack')||$('#iClose')):null; if(b) b.click(); return; }
+  if(curTab==='songs'){ const b=$('#eBack')||$('#sBack')||$('#setBack'); if(b) return b.click(); }
+  show('learn');
+}
+let hDepth=(history.state&&history.state.koa)||0, hPending=false;
+function syncHistory(){ if(hPending) return; const d=viewDepth();
+  if(d>hDepth){ for(let i=hDepth+1;i<=d;i++) history.pushState({koa:i},''); hDepth=d; }
+  else if(d<hDepth){ hPending=true; history.go(d-hDepth); } }
+addEventListener('popstate',e=>{ const nd=(e.state&&e.state.koa)||0; if(hPending){ hPending=false; hDepth=nd; return; }
+  hDepth=nd; for(let n=0;n<8&&viewDepth()>nd;n++){ const was=viewDepth(); goUp(); if(viewDepth()>=was) break; } });
 
 /* keep the screen on while Koa plays, listens, or shows the stage */
 let wake=null, wakeBusy=false;
@@ -139,10 +163,12 @@ setInterval(async()=>{ if(wakeBusy||!navigator.wakeLock) return; const want=!doc
 const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const installed=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
 let kept=false; try{ navigator.storage.persisted().then(p=>{ kept=p; }); }catch(e){}
-function askToKeep(){ if(kept||store.get('persistAsked',false)||!hasProgress(S)) return; store.set('persistAsked',true);
+/* Chrome usually agrees to keep an installed app's data, so ask again whenever Koa runs installed */
+function askToKeep(){ if(kept||!hasProgress(S)||(store.get('persistAsked',false)&&!installed())) return; store.set('persistAsked',true);
   try{ navigator.storage.persist().then(p=>{ kept=p; }); }catch(e){} }
 function keepNote(){
   if(window.top!==window||!hasProgress(S)||(S.keepNote&&dayDiff(today(),S.keepNote)<30)) return '';
+  if(installPrompt&&!installed()) return `<div class="keepnote"><h3>Install Koa</h3><p>Install Koa to open it from your home screen like an app. It works offline, and your browser keeps its progress more reliably.</p><div class="row"><button class="btn primary" id="knInstall">Install</button><button class="btn quiet" id="knDone">Not now</button></div></div>`;
   if(IOS&&!installed()) return `<div class="keepnote"><h3>Keep your progress</h3><p>Safari clears what a website has saved if you don’t open it for seven days. To keep your progress, add Koa to your Home Screen: tap Share, then Add to Home Screen.</p><div class="row"><button class="btn quiet" id="knDone">Got it</button></div></div>`;
   const days=Object.keys(S.mins).filter(k=>S.mins[k]>=30).length;
   if(kept||days<3||(S.backupDay&&dayDiff(today(),S.backupDay)<30)) return '';
@@ -150,12 +176,17 @@ function keepNote(){
 }
 function wireKeepNote(){
   const d=$('#knDone'); if(d) d.onclick=()=>{ S.keepNote=today(); save(); renderLearn(); };
+  const i=$('#knInstall'); if(i) i.onclick=async()=>{ const p=installPrompt; installPrompt=null; try{ await p.prompt(); await p.userChoice; }catch(e){} renderLearn(); };
   const s=$('#knSave'); if(s) s.onclick=async()=>{ await saveBackup($('#knMsg')); s.remove(); const dn=$('#knDone'); if(dn) dn.textContent='Done'; };
 }
 
+/* Chrome on Android offers installing; keep the offer for the Install button */
+let installPrompt=null;
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installPrompt=e; if(curTab==='learn'&&S.onboarded&&introStep==null) renderLearn(); });
+addEventListener('appinstalled',()=>{ installPrompt=null; askToKeep(); if(curTab==='learn'&&S.onboarded&&introStep==null) renderLearn(); });
+
 /* offline install when served with its service worker */
 if('serviceWorker' in navigator && document.querySelector('meta[name="koa-offline"]')){
-  const l=document.createElement('link'); l.rel='manifest'; l.href='manifest.webmanifest'; document.head.appendChild(l);
   const hadSW=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(hadSW) $('#updNote').hidden=false; });
   $('#updReload').onclick=()=>location.reload();
