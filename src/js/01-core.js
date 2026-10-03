@@ -212,8 +212,8 @@ const BUILTIN=[
 {time: 4/4}
 {tempo: 70}
 [C:8]Row, row, row your boat, gently down the stream,
-[C:8]merrily, merrily, merrily, merrily,
-[C:8]life is but a dream.`},
+[C:4]merrily, merrily, merrily, merrily,
+[C:4]life is but a dream.`},
 {id:'valley',strum:'Waltz',credit:'Traditional American folk song',tags:['folk'],src:`{title: Down in the Valley}
 {time: 3/4}
 {tempo: 70}
@@ -221,7 +221,7 @@ Down in the [C]valley, the [C]valley so [G7]low,
 [G7]hang your head [G7]over, hear the [G7]wind [C]blow.[C]
 Hear the wind [C]blow, dear, [C]hear the wind [G7]blow,
 [G7]hang your head [G7]over, hear the [G7]wind [C]blow.[C]`},
-{id:'clementine',strum:'Waltz',credit:'Traditional American folk song, 1880s',tags:['folk'],src:`{title: Clementine}
+{id:'clementine',strum:'Waltz',credit:'American folk ballad, credited to Percy Montrose, 1884',tags:['folk'],src:`{title: Clementine}
 {time: 3/4}
 {tempo: 90}
 In a [C]cavern, in a [C]canyon, exca[C]vating for a [G7]mine,
@@ -238,7 +238,7 @@ you are [G7]lost and gone for[C]ever, dreadful [G7]sorry, Clemen[C]tine.`},
 [C:2]like a [F:2]diamond [C:2]in the [G:2]sky.
 [C:4]Twinkle, twinkle, [F:2]little [C:2]star,
 [F:2]how I [C:2]wonder [G:2]what you [C:2]are.`},
-{id:'grace',strum:'Waltz',credit:'Words by John Newton, 1779',tags:['hymns'],src:`{title: Amazing Grace}
+{id:'grace',strum:'Waltz',credit:'Words by John Newton, 1779, tune New Britain',tags:['hymns'],src:`{title: Amazing Grace}
 {time: 3/4}
 {tempo: 80}
 A[C]mazing [C]grace, how [C7]sweet the [F]sound
@@ -260,32 +260,32 @@ when the [C]saints go [G]marching [C]in.[C]`},
 {id:'susanna',strum:'Folk',credit:'Stephen Foster, 1848',tags:['folk'],src:`{title: Oh! Susanna}
 {time: 4/4}
 {tempo: 100}
-I [C]come from Ala[C]bama with a [G]banjo on my [G]knee,
-I'm [C]going to Louisi[C]ana, my [G:2]true love [C:2]for to [C]see.
-It [C]rained all night the [C]day I left, the [G]weather it was [G]dry,
-the [C]sun so hot I [C]froze to death, Su[G:2]sanna, [C:2]don't you [C]cry.
+I [C]come from Ala[C]bama with a [C]banjo on my [G]knee,
+I'm [C]going to Louisi[C]ana, my [C:2]true love [G:2]for to [C]see.
+It [C]rained all night the [C]day I left, the [C]weather it was [G]dry,
+the [C]sun so hot I [C]froze to death, Su[C:2]sanna, [G:2]don't you [C]cry.
 
-Oh, Su[F]sanna, [F]oh don't you [C]cry for [G]me,
-for I [C]come from Ala[C]bama with a [G:2]banjo [C:2]on my [C]knee.`},
-{id:'row',strum:'Down',credit:'Traditional round, 1850s',tags:['kids','folk'],src:`{title: Row, Row, Row Your Boat}
+[F]Oh, Su[F]sanna, oh [C]don't you cry for [G]me,
+for I [C]come from Ala[C]bama with a [C:2]banjo [G:2]on my [C]knee.`},
+{id:'row',strum:'Down',credit:'American round, words 1852, tune 1881',tags:['kids','folk'],src:`{title: Row, Row, Row Your Boat}
 {time: 4/4}
 {tempo: 90}
 [C:8]Row, row, row your boat, gently down the stream,
-[C:8]merrily, merrily, merrily, merrily,
-[G7:4]life is but a [C:4]dream.`},
-{id:'jesusloves',strum:'Down',credit:'Words by Anna Bartlett Warner, 1860',tags:['hymns','kids'],src:`{title: Jesus Loves Me}
+[C:4]merrily, merrily, merrily, merrily,
+[G7:2]life is but a [C:2]dream.`},
+{id:'jesusloves',strum:'Down',credit:'Words by Anna Bartlett Warner, 1860, music by William B. Bradbury, 1862',tags:['hymns','kids'],src:`{title: Jesus Loves Me}
 {time: 4/4}
 {tempo: 90}
 [C]Jesus loves me, [C]this I know,
-for the [F]Bible tells me [C]so.
+[F]for the Bible [F:1]tells [C:3]me so.
 [C]Little ones to [C]Him belong,
-they are [F]weak, but He is [C:2]strong. [G7:2]
+[F:2]they are [C:2]weak, but [G7:2]He is [C:2]strong.
 
-[C]Yes, Jesus [C]loves me,
-[F]yes, Jesus [C]loves me,
-[C]yes, Jesus [C]loves me,
-the [G7]Bible tells me [C]so.`},
-{id:'silent',strum:'Waltz',credit:'Franz Gruber, 1818, English words by John F. Young, 1859',tags:['hymns','holiday'],src:`{title: Silent Night}
+[C]Yes, Jesus [F]loves me,
+[C]yes, Jesus [G]loves me,
+[C]yes, Jesus [F]loves me, the
+[C:2]Bible [G7:2]tells me [C]so.`},
+{id:'silent',strum:'Waltz',credit:'Joseph Mohr and Franz Gruber, 1818, English words by John F. Young, 1859',tags:['hymns','holiday'],src:`{title: Silent Night}
 {time: 3/4}
 {tempo: 72}
 [C]Silent [C]night, [C]holy [C]night,
@@ -298,17 +298,23 @@ the [G7]Bible tells me [C]so.`},
 {time: 4/4}
 {tempo: 110}
 [C]Jingle bells, [C]jingle bells, [C]jingle all the [C]way.
-Oh, what [F]fun it is to [C]ride in a [D7]one-horse open [G7]sleigh, hey!
+[F]Oh, what fun it [C]is to ride in a [D7]one-horse open [G7]sleigh, hey!
 [C]Jingle bells, [C]jingle bells, [C]jingle all the [C]way.
-Oh, what [F]fun it is to [C]ride in a [G7]one-horse open [C]sleigh.`},
+[F]Oh, what fun it [C]is to ride in a [G7]one-horse open [C]sleigh.`},
 {id:'wewish',strum:'Waltz',credit:'Traditional English carol',tags:['holiday','kids'],src:`{title: We Wish You a Merry Christmas}
 {time: 3/4}
 {tempo: 100}
 We [C]wish you a merry [F]Christmas, we [D7]wish you a merry [G7]Christmas, we
 [E7]wish you a merry [Am]Christmas and a [F:2]happy [G7:1]New [C]Year.
 
+Good [C]tidings we [G]bring to [Am]you and your [G]kin, we
+[C]wish you a merry [G]Christmas and a [F:2]happy [G7:1]New [C]Year.
+
 Oh, [C]bring us some figgy [F]pudding, oh, [D7]bring us some figgy [G7]pudding, oh,
-[E7]bring us some figgy [Am]pudding and a [F:2]cup of [G7:1]good [C]cheer.`},
+[E7]bring us some figgy [Am]pudding and a [F:2]cup of [G7:1]good [C]cheer.
+
+Good [C]tidings we [G]bring to [Am]you and your [G]kin, we
+[C]wish you a merry [G]Christmas and a [F:2]happy [G7:1]New [C]Year.`},
 {id:'deck',strum:'Down up',credit:'Welsh carol, English words 19th century',tags:['holiday','kids'],src:`{title: Deck the Halls}
 {time: 4/4}
 {tempo: 100}
@@ -320,7 +326,7 @@ Oh, [C]bring us some figgy [F]pudding, oh, [D7]bring us some figgy [G7]pudding, 
 {time: 4/4}
 {tempo: 90}
 [C]Go, tell it on the [C]mountain, [F]over the hills and [C]everywhere;
-[C]go, tell it on the [C]mountain that [G7]Jesus Christ is [C]born.`}
+[C]go, tell it on the [C]mountain that [C:2]Jesus [G7:2]Christ is [C]born.`}
 ];
 function parseSong(text){
   let title='', beats=4, tempo=null, timeSig='', strum=''; const lines=[]; let bars=0;
