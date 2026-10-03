@@ -110,8 +110,8 @@ function renderSettings(){
   $$('#stHand button').forEach(b=>b.onclick=()=>{ S.lefty=b.dataset.v==='l'; save(); renderSettings(); });
   $$('#stTheme button').forEach(b=>b.onclick=()=>{ S.theme=b.dataset.v==='auto'?null:b.dataset.v; applyTheme(); save(); renderSettings(); });
   $('#stReset').onclick=()=>{ const b=$('#stReset'); if(!b.dataset.confirm){ b.dataset.confirm='1'; b.textContent='Tap again to erase lessons, scores, and your songs'; return; }
-    const keep={tuning:S.tuning,lefty:S.lefty,theme:S.theme}; for(const k in S) delete S[k]; Object.assign(S,JSON.parse(JSON.stringify(DEFAULTS)),keep);
-    save(); openLesson=null; openSong=null; editing=null; $('#stResetMsg').textContent='Progress reset.'; b.textContent='Reset all progress'; delete b.dataset.confirm; };
+    clock.stop(); const keep={tuning:S.tuning,lefty:S.lefty,theme:S.theme,uke:S.uke,goal:S.goal,cal:S.cal,sens:S.sens}; for(const k in S) delete S[k]; Object.assign(S,JSON.parse(JSON.stringify(DEFAULTS)),keep);
+    save(); openLesson=null; openSong=null; editing=null; openSet=null; setRun=null; wStep=0; introStep=null; $('#stResetMsg').textContent='Progress reset.'; b.textContent='Reset all progress'; delete b.dataset.confirm; };
 }
 function applyTheme(){ if(S.theme) document.documentElement.dataset.theme=S.theme; else delete document.documentElement.dataset.theme;
   const dark=S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches; const m=document.querySelector('meta[name=theme-color]'); if(m) m.content=dark?'#1B1714':'#F5EFE4'; }
@@ -126,7 +126,7 @@ function mainLoop(){
   else if(curTab==='tune') tunerFrame();
   requestAnimationFrame(mainLoop);
 }
-document.addEventListener('visibilitychange',()=>{ if(document.hidden && clock.on) clock.stop(); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) return; if(clock.on) clock.stop(); mic.off(); });
 
 /* offline install when served with its service worker */
 if('serviceWorker' in navigator && document.querySelector('meta[name="koa-offline"]')){

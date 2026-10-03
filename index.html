@@ -11,7 +11,7 @@
 <meta property="og:description" content="Lessons, songs, chord and rhythm practice, and a tuner. It runs in your browser and works offline.">
 <meta property="og:type" content="website">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -634,7 +634,13 @@ const CHORDS=[
   {n:'Gm7',f:[0,2,1,1],g:[0,2,1,1],bar:{f:1,a:2,b:3}},
   {n:'C♯',f:[1,1,1,4],g:[1,1,1,4],bar:{f:1,a:0,b:2}},
   {n:'F♯',f:[3,1,2,1],g:[3,1,2,1],bar:{f:1,a:1,b:3}},
-  {n:'Bm7',f:[2,2,2,2],g:[1,1,1,1],bar:{f:2,a:0,b:3}}
+  {n:'Bm7',f:[2,2,2,2],g:[1,1,1,1],bar:{f:2,a:0,b:3}},
+  {n:'A♭',f:[1,3,4,3],g:[1,2,4,3]},
+  {n:'B',f:[4,3,2,2],g:[3,2,1,1],bar:{f:2,a:2,b:3}},
+  {n:'A♭7',f:[1,3,2,3],g:[1,3,2,4]},
+  {n:'C♯7',f:[1,1,1,2],g:[1,1,1,2],bar:{f:1,a:0,b:2}},
+  {n:'E♭7',f:[3,3,3,4],g:[1,1,1,2],bar:{f:3,a:0,b:2}},
+  {n:'F♯7',f:[3,4,2,4],g:[2,3,1,4]}
 ];
 const byN=Object.fromEntries(CHORDS.map(c=>[c.n,c]));
 const learned=n=>S.learned.includes(n);
@@ -1117,7 +1123,7 @@ $$('#pTabs button').forEach(b=>b.onclick=()=>{ S.ptab=b.dataset.p; save(); rende
 
 /* chords */
 let checking=false;
-const GROUPS=[['Start here',['C','Am','F','G']],['Next',['G7','C7','Em','Dm','D','A','A7','E7']],['Further along',['D7','F7','Am7','Cmaj7','B♭','Bm','E','Gm','Cm']],['More shapes',['Em7','Dm7','Gm7','Bm7','F♯m','C♯m','B7','B♭7','Fm','E♭','C♯','F♯']]];
+const GROUPS=[['Start here',['C','Am','F','G']],['Next',['G7','C7','Em','Dm','D','A','A7','E7']],['Further along',['D7','F7','Am7','Cmaj7','B♭','Bm','E','Gm','Cm']],['More shapes',['Em7','Dm7','Gm7','Bm7','F♯m','C♯m','B7','B♭7','Fm','E♭','C♯','F♯','A♭','B','A♭7','C♯7','E♭7','F♯7']]];
 function renderChords(){
   const c=CHORDS[S.sel]||CHORDS[0], nm=chordName(c), bari=TUNINGS[S.tuning].shift?` On baritone this shape sounds as ${nm}.`:'';
   const steps=chordSteps(c);
@@ -2170,8 +2176,8 @@ function renderSettings(){
   $$('#stHand button').forEach(b=>b.onclick=()=>{ S.lefty=b.dataset.v==='l'; save(); renderSettings(); });
   $$('#stTheme button').forEach(b=>b.onclick=()=>{ S.theme=b.dataset.v==='auto'?null:b.dataset.v; applyTheme(); save(); renderSettings(); });
   $('#stReset').onclick=()=>{ const b=$('#stReset'); if(!b.dataset.confirm){ b.dataset.confirm='1'; b.textContent='Tap again to erase lessons, scores, and your songs'; return; }
-    const keep={tuning:S.tuning,lefty:S.lefty,theme:S.theme}; for(const k in S) delete S[k]; Object.assign(S,JSON.parse(JSON.stringify(DEFAULTS)),keep);
-    save(); openLesson=null; openSong=null; editing=null; $('#stResetMsg').textContent='Progress reset.'; b.textContent='Reset all progress'; delete b.dataset.confirm; };
+    clock.stop(); const keep={tuning:S.tuning,lefty:S.lefty,theme:S.theme,uke:S.uke,goal:S.goal,cal:S.cal,sens:S.sens}; for(const k in S) delete S[k]; Object.assign(S,JSON.parse(JSON.stringify(DEFAULTS)),keep);
+    save(); openLesson=null; openSong=null; editing=null; openSet=null; setRun=null; wStep=0; introStep=null; $('#stResetMsg').textContent='Progress reset.'; b.textContent='Reset all progress'; delete b.dataset.confirm; };
 }
 function applyTheme(){ if(S.theme) document.documentElement.dataset.theme=S.theme; else delete document.documentElement.dataset.theme;
   const dark=S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches; const m=document.querySelector('meta[name=theme-color]'); if(m) m.content=dark?'#1B1714':'#F5EFE4'; }
@@ -2186,7 +2192,7 @@ function mainLoop(){
   else if(curTab==='tune') tunerFrame();
   requestAnimationFrame(mainLoop);
 }
-document.addEventListener('visibilitychange',()=>{ if(document.hidden && clock.on) clock.stop(); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) return; if(clock.on) clock.stop(); mic.off(); });
 
 /* offline install when served with its service worker */
 if('serviceWorker' in navigator && document.querySelector('meta[name="koa-offline"]')){

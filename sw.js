@@ -1,7 +1,7 @@
 // Keeps a copy of Koa so it opens without a connection.
 // Change the version name whenever you publish a new build, so phones fetch the new copy.
-const CACHE = 'koa-1';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'koa-2';
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

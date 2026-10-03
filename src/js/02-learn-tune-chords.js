@@ -158,7 +158,7 @@ $$('#pTabs button').forEach(b=>b.onclick=()=>{ S.ptab=b.dataset.p; save(); rende
 
 /* chords */
 let checking=false;
-const GROUPS=[['Start here',['C','Am','F','G']],['Next',['G7','C7','Em','Dm','D','A','A7','E7']],['Further along',['D7','F7','Am7','Cmaj7','B♭','Bm','E','Gm','Cm']],['More shapes',['Em7','Dm7','Gm7','Bm7','F♯m','C♯m','B7','B♭7','Fm','E♭','C♯','F♯']]];
+const GROUPS=[['Start here',['C','Am','F','G']],['Next',['G7','C7','Em','Dm','D','A','A7','E7']],['Further along',['D7','F7','Am7','Cmaj7','B♭','Bm','E','Gm','Cm']],['More shapes',['Em7','Dm7','Gm7','Bm7','F♯m','C♯m','B7','B♭7','Fm','E♭','C♯','F♯','A♭','B','A♭7','C♯7','E♭7','F♯7']]];
 function renderChords(){
   const c=CHORDS[S.sel]||CHORDS[0], nm=chordName(c), bari=TUNINGS[S.tuning].shift?` On baritone this shape sounds as ${nm}.`:'';
   const steps=chordSteps(c);
