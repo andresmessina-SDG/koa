@@ -1,0 +1,11 @@
+{
+  "name": "Koa: learn the ukulele",
+  "short_name": "Koa",
+  "description": "Learn the ukulele, from your first chord to your first song.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F5EFE4",
+  "theme_color": "#F5EFE4",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
