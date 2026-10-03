@@ -1,6 +1,6 @@
 // Keeps a copy of Koa so it opens without a connection.
 // build.sh sets the version name from the files, so every new build reaches phones that already have Koa.
-const CACHE = 'koa-6f7f208f79';
+const CACHE = 'koa-d6894c0b15';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg', './apple-touch-icon.png', './icon-192.png',
   './fonts/fraunces.woff2', './fonts/instrument-sans.woff2', './fonts/koa-symbols.woff2'];
 
