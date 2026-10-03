@@ -221,7 +221,7 @@ Down in the [C]valley, the [C]valley so [G7]low,
 [G7]hang your head [G7]over, hear the [G7]wind [C]blow.[C]
 Hear the wind [C]blow, dear, [C]hear the wind [G7]blow,
 [G7]hang your head [G7]over, hear the [G7]wind [C]blow.[C]`},
-{id:'clementine',strum:'Waltz',credit:'American folk ballad, credited to Percy Montrose, 1884',tags:['folk'],src:`{title: Clementine}
+{id:'clementine',strum:'Waltz',credit:'Folk ballad, credited to Percy Montrose, 1884',tags:['folk'],src:`{title: Clementine}
 {time: 3/4}
 {tempo: 90}
 In a [C]cavern, in a [C]canyon, exca[C]vating for a [G7]mine,
@@ -273,7 +273,7 @@ for I [C]come from Ala[C]bama with a [C:2]banjo [G:2]on my [C]knee.`},
 [C:8]Row, row, row your boat, gently down the stream,
 [C:4]merrily, merrily, merrily, merrily,
 [G7:2]life is but a [C:2]dream.`},
-{id:'jesusloves',strum:'Down',credit:'Words by Anna Bartlett Warner, 1860, music by William B. Bradbury, 1862',tags:['hymns','kids'],src:`{title: Jesus Loves Me}
+{id:'jesusloves',strum:'Down',credit:'Words by Anna B. Warner, 1860, tune by Bradbury',tags:['hymns','kids'],src:`{title: Jesus Loves Me}
 {time: 4/4}
 {tempo: 90}
 [C]Jesus loves me, [C]this I know,
@@ -285,7 +285,7 @@ for I [C]come from Ala[C]bama with a [C:2]banjo [G:2]on my [C]knee.`},
 [C]yes, Jesus [G]loves me,
 [C]yes, Jesus [F]loves me, the
 [C:2]Bible [G7:2]tells me [C]so.`},
-{id:'silent',strum:'Waltz',credit:'Joseph Mohr and Franz Gruber, 1818, English words by John F. Young, 1859',tags:['hymns','holiday'],src:`{title: Silent Night}
+{id:'silent',strum:'Waltz',credit:'Mohr and Gruber, 1818; English by J. F. Young',tags:['hymns','holiday'],src:`{title: Silent Night}
 {time: 3/4}
 {tempo: 72}
 [C]Silent [C]night, [C]holy [C]night,
