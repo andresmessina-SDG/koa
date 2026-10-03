@@ -110,7 +110,7 @@ function renderPlayer(){
     return `<div class="line">${l.pre?`<span class="pre">${esc(l.pre)}</span>`:''}${l.bars.map(b=>`<span class="bar" data-b="${bi++}"><span class="ch">${esc(b.name)}${b.beats!==s.beats?`<span class="sr">, ${b.beats} beats</span>`:''}</span><span class="ly">${esc(b.lyric)||' '}</span></span>`).join('')}</div>`; }).join('');
   $('#songs').innerHTML=`<div class="ph" style="margin-bottom:4px"><button class="icon-btn" id="sBack" aria-label="${setRun?'Back to the setlist':'All songs'}" style="margin-left:-10px">${icon('back')}</button><span class="row" style="gap:0">${s.user?'<button class="btn quiet" id="sEdit">Edit</button>':''}<button class="btn quiet" id="sToSet" aria-expanded="false">${icon('plus',16)}Setlist</button></span></div>
     ${addToSetPanel(s)}
-    <h1 class="t-display">${esc(s.title)}</h1><p class="credit">${esc(s.credit||'')}, ${esc(s.time)} time</p>
+    <h1 class="t-display">${esc(s.title)}</h1><p class="credit">${s.credit?esc(s.credit)+'<br>':''}${esc(s.time)} time</p>
     ${setBarHtml(s)}
     <div class="keyrow"><span class="lbl">Key</span><div class="keyctl"><button class="icon-btn sm" id="kDown" aria-label="Lower the key">${icon('minus',18)}</button><b id="kName" aria-live="polite">${esc(s.key)}</b><button class="icon-btn sm" id="kUp" aria-label="Raise the key">${icon('plus',18)}</button></div>
       <span class="row" style="gap:2px">${s.semis?`<button class="btn quiet" id="kReset" style="padding:6px 8px">Back to ${esc(s.origKey)}</button>`:''}<button class="btn quiet" id="kEasy" style="padding:6px 8px">Easiest for me</button></span></div>
