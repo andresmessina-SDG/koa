@@ -128,9 +128,38 @@ function mainLoop(){
 }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) return; if(clock.on) clock.stop(); mic.off(); });
 
+/* keep the screen on while Koa plays, listens, or shows the stage */
+let wake=null, wakeBusy=false;
+setInterval(async()=>{ if(wakeBusy||!navigator.wakeLock) return; const want=!document.hidden && (active()||document.body.classList.contains('stage'));
+  if(want===!!wake) return; wakeBusy=true;
+  try{ if(want){ wake=await navigator.wakeLock.request('screen'); wake.addEventListener('release',()=>{ wake=null; }); } else { const w=wake; wake=null; await w.release(); } }catch(e){ wake=null; }
+  wakeBusy=false; },1000);
+
+/* keep your progress: browsers may clear what a site saved, Safari after seven days unopened */
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const installed=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+let kept=false; try{ navigator.storage.persisted().then(p=>{ kept=p; }); }catch(e){}
+function askToKeep(){ if(kept||store.get('persistAsked',false)||!hasProgress(S)) return; store.set('persistAsked',true);
+  try{ navigator.storage.persist().then(p=>{ kept=p; }); }catch(e){} }
+function keepNote(){
+  if(window.top!==window||!hasProgress(S)||(S.keepNote&&dayDiff(today(),S.keepNote)<30)) return '';
+  if(IOS&&!installed()) return `<div class="keepnote"><h3>Keep your progress</h3><p>Safari clears what a website has saved if you don’t open it for seven days. To keep your progress, add Koa to your Home Screen: tap Share, then Add to Home Screen.</p><div class="row"><button class="btn quiet" id="knDone">Got it</button></div></div>`;
+  const days=Object.keys(S.mins).filter(k=>S.mins[k]>=30).length;
+  if(kept||days<3||(S.backupDay&&dayDiff(today(),S.backupDay)<30)) return '';
+  return `<div class="keepnote"><h3>Keep your progress</h3><p>Koa saves your progress in this browser only. A backup file brings it back if the browser clears it or you switch devices.</p><div class="row"><button class="btn line" id="knSave">Save a backup</button><button class="btn quiet" id="knDone">Not now</button></div><p class="note" id="knMsg" aria-live="polite"></p></div>`;
+}
+function wireKeepNote(){
+  const d=$('#knDone'); if(d) d.onclick=()=>{ S.keepNote=today(); save(); renderLearn(); };
+  const s=$('#knSave'); if(s) s.onclick=async()=>{ await saveBackup($('#knMsg')); s.remove(); const dn=$('#knDone'); if(dn) dn.textContent='Done'; };
+}
+
 /* offline install when served with its service worker */
 if('serviceWorker' in navigator && document.querySelector('meta[name="koa-offline"]')){
   const l=document.createElement('link'); l.rel='manifest'; l.href='manifest.webmanifest'; document.head.appendChild(l);
+  const hadSW=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(hadSW) $('#updNote').hidden=false; });
+  $('#updReload').onclick=()=>location.reload();
+  $('#updClose').innerHTML=icon('close',18); $('#updClose').onclick=()=>{ $('#updNote').hidden=true; };
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 

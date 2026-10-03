@@ -13,7 +13,7 @@ Koa teaches you the ukulele, from your first chord to your first song. It runs i
 
 ## Your data
 
-Koa keeps your progress in your browser. It has no accounts and stores nothing on a server. The only outside request is for its fonts, from Google Fonts. When you use the microphone, Koa listens on your device and never records or uploads the sound. Settings has a backup button, so you can save your progress to a file.
+Koa keeps your progress in your browser. It has no accounts, stores nothing on a server, and makes no requests to other sites. When you use the microphone, Koa listens on your device and never records or uploads the sound. Settings has a backup button, so you can save your progress to a file. Browsers can clear what a site has saved, and Safari does so after seven days unopened unless Koa is on the Home Screen, so Koa reminds you to back up or install it.
 
 ## Run it on your computer
 
@@ -33,7 +33,7 @@ The code lives in `src`. The page is split into a head, a body, and numbered scr
 ./build.sh
 ```
 
-When you publish a new build, change the version name at the top of `sw.js`. That tells phones that already have Koa to fetch the new copy.
+`build.sh` also names the offline cache in `sw.js` after the files, so phones that already have Koa notice each new build and offer to reload.
 
 ## The drawings
 
@@ -41,4 +41,4 @@ The ukulele drawings follow published measurements of real instruments: a Cordob
 
 ## Credits
 
-The songs are in the public domain. The fonts are Fraunces and Instrument Sans, both under the SIL Open Font License, served by Google Fonts.
+The songs are in the public domain. The fonts are Fraunces and Instrument Sans, with ♭, ♯, ✓, and ⇄ from STIX Two, all under the SIL Open Font License. Koa ships cut-down copies in `fonts`, next to their licenses.

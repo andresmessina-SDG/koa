@@ -115,10 +115,7 @@ function renderPlayer(){
     <div class="keyrow"><span class="lbl">Key</span><div class="keyctl"><button class="icon-btn sm" id="kDown" aria-label="Lower the key">${icon('minus',18)}</button><b id="kName" aria-live="polite">${esc(s.key)}</b><button class="icon-btn sm" id="kUp" aria-label="Raise the key">${icon('plus',18)}</button></div>
       <span class="row" style="gap:2px">${s.semis?`<button class="btn quiet" id="kReset" style="padding:6px 8px">Back to ${esc(s.origKey)}</button>`:''}<button class="btn quiet" id="kEasy" style="padding:6px 8px">Easiest for me</button></span></div>
     <p class="note" id="kMsg" aria-live="polite" style="margin-top:0"></p>
-    <div class="strip">${names.map(n=>{ const sh=shapeFor(n); return `<div class="sc"><div class="nm">${esc(n)}</div>${diagram(sh,68,n)}</div>`; }).join('')}</div>
-    ${missing.length?`<p class="note off">No diagram yet for ${esc(missing.join(', '))}. Those bars will play, but Koa can\u2019t check them.</p>`:''}
-    ${(()=>{ const P=songPattern(s); return P?`<div class="strumrow"><span class="lbl">Strum</span><span class="mini" role="img" aria-label="${esc(P.n)} strum pattern">${[...P.p].slice(0,s.beats*2).map((ch,i)=>{ const g=ch==='.', down=g?i%2===0:ch==='D'; return `<svg class="${g?'g':''}" width="12" height="18" viewBox="0 0 26 36" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="${g?2.4:3}" stroke-linecap="round" stroke-linejoin="round" ${g?'stroke-dasharray="3 4"':''}>${down?'<path d="M13 4v26M5.5 22.5 13 30l7.5-7.5"/>':'<path d="M13 32V6M5.5 13.5 13 6l7.5 7.5"/>'}</g></svg>`; }).join('')}</span><span class="spn">${esc(P.n)}</span><button class="btn quiet" id="sStrumGo" style="padding:4px 6px">Practice it</button></div>`:''; })()}
-    <details class="opts"${S.songWait?' open':''}><summary>Play-along options</summary><div class="inner">
+    <details class="opts"><summary>Play-along options</summary><div class="inner">
       <button class="switch" role="switch" id="sWait" aria-checked="${S.songWait}"><span class="sw" aria-hidden="true"></span><span>Wait for me at each chord change<span class="hint">The song pauses until you’re ready</span></span></button>
       <button class="switch" role="switch" id="sBacking" aria-checked="${S.songBacking}"><span class="sw" aria-hidden="true"></span>Backing strum plays the pattern</button>
       <button class="switch" role="switch" id="sSpeed" aria-checked="${S.songSpeed}"><span class="sw" aria-hidden="true"></span>Speed up 5 bpm after each play</button>
@@ -126,6 +123,10 @@ function renderPlayer(){
     <p class="note" id="sMsg" aria-live="polite"></p>
     <div class="countin" id="sCount" aria-hidden="true"></div>
     <div class="sheet" id="sheet">${sheet}</div>
+    <h3 class="label">Chords in this song</h3>
+    <div class="strip">${names.map(n=>{ const sh=shapeFor(n); return `<div class="sc"><div class="nm">${esc(n)}</div>${diagram(sh,68,n)}</div>`; }).join('')}</div>
+    ${missing.length?`<p class="note off">No diagram yet for ${esc(missing.join(', '))}. Those bars will play, but Koa can\u2019t check them.</p>`:''}
+    ${(()=>{ const P=songPattern(s); return P?`<div class="strumrow"><span class="lbl">Strum</span><span class="mini" role="img" aria-label="${esc(P.n)} strum pattern">${[...P.p].slice(0,s.beats*2).map((ch,i)=>{ const g=ch==='.', down=g?i%2===0:ch==='D'; return `<svg class="${g?'g':''}" width="12" height="18" viewBox="0 0 26 36" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="${g?2.4:3}" stroke-linecap="round" stroke-linejoin="round" ${g?'stroke-dasharray="3 4"':''}>${down?'<path d="M13 4v26M5.5 22.5 13 30l7.5-7.5"/>':'<path d="M13 32V6M5.5 13.5 13 6l7.5 7.5"/>'}</g></svg>`; }).join('')}</span><span class="spn">${esc(P.n)}</span><button class="btn quiet" id="sStrumGo" style="padding:4px 6px">Practice it</button></div>`:''; })()}
     <div class="nowcard" id="nowCard" hidden aria-live="polite">
       <div class="nc"><span class="lbl">Now</span><b id="ncNow">–</b><div id="ncNowDia" class="ncd"></div></div>
       <div class="nc next"><span class="lbl">Next</span><b id="ncNext">–</b><div id="ncNextDia" class="ncd"></div></div>

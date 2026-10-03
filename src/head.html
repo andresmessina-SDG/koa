@@ -10,12 +10,22 @@
 <meta property="og:title" content="Koa: learn the ukulele">
 <meta property="og:description" content="Lessons, songs, chord and rhythm practice, and a tuner. It runs in your browser and works offline.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://andresmessina-sdg.github.io/koa/">
+<meta property="og:image" content="https://andresmessina-sdg.github.io/koa/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* fonts ship with Koa, so it needs no outside requests and works offline from the first visit.
+   koa-symbols holds ♭ ♯ ✓ ⇄ from STIX Two, which neither face has. */
+@font-face{font-family:'Fraunces';src:url(fonts/fraunces.woff2) format('woff2');font-weight:300 600;font-display:swap}
+@font-face{font-family:'Instrument Sans';src:url(fonts/instrument-sans.woff2) format('woff2');font-weight:400 600;font-display:swap}
+@font-face{font-family:'Fraunces';src:url(fonts/koa-symbols.woff2) format('woff2');font-weight:300 600;unicode-range:U+266D-266F,U+2713,U+21C4}
+@font-face{font-family:'Instrument Sans';src:url(fonts/koa-symbols.woff2) format('woff2');font-weight:400 600;unicode-range:U+266D-266F,U+2713,U+21C4}
 :root{
   --paper:#F5EFE4; --sheet:#FBF7F0; --ink:#2B2520; --soft:#5D554B; --faint:#726A61;
   --nylon:#D5CBBA; --rule:#E6DDCF; --koa:#9C5C2A; --koa-soft:rgba(156,92,42,.11); --on-koa:#FBF7F0;
@@ -444,6 +454,16 @@ body.onboard nav.dock,body.onboard header.top .hright{display:none}
 @media (max-width:380px),(max-height:700px){ #rPatterns{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-18px;padding-right:18px;margin-bottom:14px} #rPatterns::-webkit-scrollbar{display:none} #rPatterns button{flex:0 0 auto} .seg2{margin-bottom:12px} .grid8 .cell{padding:6px 0} .grid8 .ar{font-size:30px} }
 @media (max-height:700px){ .tuner-note{font-size:88px;margin:4px 0 4px} .wave{height:56px;margin:10px 0 16px} .strings button{padding:12px 0 9px;font-size:24px} .strings{margin-bottom:18px}
   #pv-changes .lede{display:none} .ringwrap{width:min(156px,42vw)} .ringc b{font-size:54px} .trainer{margin-bottom:14px} .ph{margin-bottom:14px} .t-display{font-size:32px} }
+/* new version and keep-your-progress notes */
+.update{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);z-index:30;width:min(420px,calc(100vw - 24px));display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px 8px 16px;border-radius:18px;font-size:14px;
+  background:color-mix(in srgb,var(--sheet) 94%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--shadow),inset 0 0 0 1px var(--rule)}
+.update .btn{padding:8px 14px;font-size:14px}
+.keepnote{margin:0 0 18px;padding:16px 18px 12px;border-radius:20px;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--rule)}
+.keepnote h3{font-size:14px;font-weight:500;margin:0 0 6px}
+.keepnote p{font-size:14px;color:var(--soft)}
+.keepnote .row{margin-top:8px;gap:4px}
+.keepnote .btn{padding:8px 12px;font-size:14px}
+.keepnote .note:empty{min-height:0;margin:0}
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important} }
 </style>
 </head>

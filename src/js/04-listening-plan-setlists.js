@@ -290,12 +290,12 @@ function wireAddPanel(s){
 /* ---------- backup and restore ---------- */
 async function saveBackup(msgEl){
   const data=JSON.stringify({app:'koa',version:4,saved:new Date().toISOString(),state:S},null,1), name=`koa-backup-${today()}.json`;
-  if(window.top===window){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); msgEl.className='note good'; msgEl.textContent='Backup saved to your downloads.'; return; }
+  if(window.top===window){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); S.backupDay=today(); save(); msgEl.className='note good'; msgEl.textContent='Backup saved to your downloads.'; return; }
   copyBackup(msgEl);
 }
 async function copyBackup(msgEl){
   const data=JSON.stringify({app:'koa',version:4,saved:new Date().toISOString(),state:S});
-  try{ await navigator.clipboard.writeText(data); msgEl.className='note good'; msgEl.textContent='Backup copied. Paste it into a note or file to keep it safe.'; }
+  try{ await navigator.clipboard.writeText(data); S.backupDay=today(); save(); msgEl.className='note good'; msgEl.textContent='Backup copied. Paste it into a note or file to keep it safe.'; }
   catch(e){ msgEl.className='note'; msgEl.innerHTML='Copy this text and keep it somewhere safe:<textarea readonly style="min-height:90px;margin-top:8px" id="bkText"></textarea>'; $('#bkText').value=data; $('#bkText').select(); }
 }
 function parseBackup(text){
