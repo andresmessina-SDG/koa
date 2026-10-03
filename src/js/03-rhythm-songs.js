@@ -107,7 +107,7 @@ function renderPlayer(){
   const s=getSong(openSong), bpm=S.songBpm[s.id]||s.tempo||80; S.songBpm[s.id]=bpm;
   const names=songChords(s), missing=names.filter(n=>!shapeFor(n));
   let bi=0; const sheet=s.lines.map(l=>{ if(l.gap) return '<div class="gap"></div>'; if(!l.bars.length) return `<div class="line plain">${esc(l.plain)}</div>`;
-    return `<div class="line">${l.pre?`<span class="pre">${esc(l.pre)}</span>`:''}${l.bars.map(b=>`<span class="bar" data-b="${bi++}"><span class="ch">${esc(b.name)}${b.beats!==s.beats?`<span class="sr">, ${b.beats} beats</span>`:''}</span><span class="ly">${esc(b.lyric)||' '}</span></span>`).join('')}</div>`; }).join('');
+    return `<div class="line">${l.pre?`<span class="pre">${esc(l.pre)}</span>`:''}${l.bars.map((b,i)=>`<span class="bar" data-b="${bi++}"><span class="ch${i&&l.bars[i-1].name===b.name?' rep':''}">${esc(b.name)}${b.beats!==s.beats?`<span class="sr">, ${b.beats} beats</span>`:''}</span><span class="ly">${esc(b.lyric)||' '}</span></span>`).join('')}</div>`; }).join('');
   $('#songs').innerHTML=`<div class="ph" style="margin-bottom:4px"><button class="icon-btn" id="sBack" aria-label="${setRun?'Back to the setlist':'All songs'}" style="margin-left:-10px">${icon('back')}</button><span class="row" style="gap:0">${s.user?'<button class="btn quiet" id="sEdit">Edit</button>':''}<button class="btn quiet" id="sToSet" aria-expanded="false">${icon('plus',16)}Setlist</button></span></div>
     ${addToSetPanel(s)}
     <h1 class="t-display">${esc(s.title)}</h1><p class="credit">${s.credit?esc(s.credit)+'<br>':''}${esc(s.time)} time</p>
