@@ -1,0 +1,121 @@
+<body>
+<div class="app">
+  <header class="top">
+    <button class="mark" id="brandBtn" aria-label="Koa, go to Learn">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="var(--koa)"/><circle cx="13" cy="13" r="4.6" fill="var(--paper)"/></svg>
+      Koa
+    </button>
+    <div class="hright">
+      <button class="micpill" id="micPill" aria-label="Microphone on. Tap to stop" title="Tap to stop the microphone"><i aria-hidden="true"></i>Mic on</button>
+      <button class="icon-btn" id="setBtn" aria-label="Settings"></button>
+    </div>
+  </header>
+
+  <div class="session" id="session" hidden role="region" aria-label="Practice session">
+    <div class="ses-txt"><span class="ses-step" id="sesStep"></span><span class="ses-title" id="sesTitle"></span></div>
+    <div class="row" style="gap:4px;flex-wrap:nowrap"><button class="btn quiet" id="sesGo" style="padding:8px 8px">Open</button><button class="btn quiet" id="sesNext">Skip</button><button class="icon-btn sm" id="sesEnd" aria-label="End practice session"></button></div>
+  </div>
+
+  <main>
+    <section id="learn" aria-label="Learn"></section>
+
+    <section id="songs" aria-label="Songs" hidden></section>
+
+    <section id="practice" aria-label="Practice" hidden>
+      <div class="ph"><h1 class="t-display">Practice</h1></div>
+      <div class="tabs" id="pTabs" role="group" aria-label="Practice tools">
+        <button data-p="chords">Chords</button><button data-p="changes">Changes</button><button data-p="rhythm">Rhythm</button>
+      </div>
+
+      <div id="pv-chords"></div>
+
+      <div id="pv-changes" hidden>
+        <div class="seg2" id="pMode" role="group" aria-label="How to practice" style="margin-bottom:14px"><button data-m="count">Count changes</button><button data-m="pace">Change on the beat</button></div>
+        <p class="lede" id="pLede">One minute, two chords. Count every clean change.</p>
+        <div class="trainer">
+          <div class="side cur" id="pSideA"><label class="sr" for="pA">First chord</label><select id="pA"></select><div class="dia" id="pDiaA"></div></div>
+          <div class="ringwrap">
+            <svg class="ring" viewBox="0 0 220 220" aria-hidden="true"><circle class="track" cx="110" cy="110" r="104"/><circle class="prog" id="pRing" cx="110" cy="110" r="104"/></svg>
+            <div class="ringc" aria-live="polite"><b id="pNum">–</b><span id="pLbl">best a minute</span><span class="clk" id="pClock">1:00</span></div>
+          </div>
+          <div class="side" id="pSideB"><label class="sr" for="pB">Second chord</label><select id="pB"></select><div class="dia" id="pDiaB"></div></div>
+        </div>
+        <p class="tip" id="pTip"></p>
+        <div class="pacelvl" id="pPace" hidden></div>
+        <button class="btn primary wide" id="pBtn">Start the minute</button>
+        <p class="note center" id="pCount"></p>
+        <div class="center"><button class="switch" role="switch" id="pAuto" aria-checked="false"><span class="sw" aria-hidden="true"></span>Listen and count for me</button></div>
+        <h3 class="label" id="pChartTitle">Your progress</h3>
+        <div id="pChart"></div>
+        <h3 class="label">Best changes per minute</h3>
+        <ol class="bests" id="pBest"></ol>
+      </div>
+
+      <div id="pv-rhythm" hidden>
+        <div class="seg2" id="rMode" role="group" aria-label="Right hand"><button data-m="strum">Strumming</button><button data-m="pick">Fingerpicking</button></div>
+        <div class="chips" id="rPatterns" role="group" aria-label="Pattern"></div>
+        <div id="rGrid"></div>
+        <div class="transport" id="rTransport">
+          <button class="play sm" id="rPlay" aria-label="Start metronome"></button>
+          <div class="tempo"><button class="icon-btn sm" id="rMinus" aria-label="Slower"></button><div class="bpmv"><b id="rBpm">80</b><span>bpm</span></div><button class="icon-btn sm" id="rPlus" aria-label="Faster"></button></div>
+          <label class="sr" for="rRange">Tempo</label><input type="range" id="rRange" min="40" max="180" step="1" value="80">
+        </div>
+        <p class="legend" id="rLegend"></p>
+        <div class="timing" id="rTimingPanel" hidden aria-live="polite"><div id="rTimingStrip"></div><p class="small soft center" id="rTimingText"></p></div>
+        <div class="optlist">
+          <div class="opt"><button class="switch" role="switch" id="rTime" aria-checked="false"><span class="sw" aria-hidden="true"></span><span>Check my timing<span class="hint">Koa listens to each strum</span></span></button></div>
+          <div class="opt"><button class="switch" role="switch" id="rHear" aria-checked="false"><span class="sw" aria-hidden="true"></span>Hear the pattern on</button><label class="sr" for="rChord">Chord for the pattern sound</label><select id="rChord"></select></div>
+          <div class="opt"><button class="switch" role="switch" id="rSpeed" aria-checked="false"><span class="sw" aria-hidden="true"></span><span>Speed up to<span class="hint">Adds 4 bpm every 4 bars</span></span></button><label class="sr" for="rTarget">Target tempo</label><input type="number" id="rTarget" min="50" max="200" step="1" value="120"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tune" aria-label="Tune" hidden>
+      <div class="ph"><h1 class="t-display">Tune</h1><button class="btn quiet" id="tTuning"></button></div>
+      <div class="tuner-note idle" id="tNote">–</div>
+      <div class="tuner-cents" id="tCents">Waiting to listen</div>
+      <div class="tunewrap"><svg class="wave" viewBox="0 0 400 84" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="200" y1="6" x2="200" y2="78" stroke="var(--dfret)" stroke-width="1.5"/>
+        <path id="tWave" d="M0 42 L400 42" fill="none" stroke="var(--nylon)" stroke-width="2.5" stroke-linecap="round"/>
+      </svg><span class="tmark" id="tMark" aria-hidden="true"></span></div>
+      <div class="tscale" aria-hidden="true"><span>Too low, tighten</span><b>In tune</b><span>Too high, loosen</span></div>
+      <div class="strings" id="tStrings"></div>
+      <div class="center"><button class="btn primary" id="micBtn">Start listening</button></div>
+      <p class="note center" id="tMsg">Tap a string to hear its reference note.</p>
+      <details class="opts ear" id="earBox"><summary>Tune by ear</summary><div class="inner">
+        <p class="small soft" style="margin:4px 0 8px">Tap a string above to hear its note, then pluck the same string on your ukulele. If yours sounds lower, tighten its peg a little. If it sounds higher, loosen it. Turn only a little at a time. When the two sound the same, switch it on below. New strings stretch, so expect to retune often in the first week.</p>
+        <div id="earRow" class="earrow"></div><p class="note" id="earMsg" aria-live="polite"></p>
+      </div></details>
+    </section>
+  </main>
+</div>
+
+<div id="stage" aria-live="polite">
+  <div class="stop"><span id="stTitle" class="serif" style="font-size:20px"></span><div class="row"><button class="play sm" id="stPlay" aria-label="Play along"></button><button class="icon-btn" id="stExit" aria-label="Exit stage view" title="Exit stage view"></button></div></div>
+  <div class="smain">
+    <div><div id="stCount"></div><div id="stCur">–</div><div id="stNext"></div></div>
+    <div id="stDia"></div>
+  </div>
+  <div id="stLyric"></div>
+</div>
+
+<dialog id="calib" aria-labelledby="calHead">
+  <div class="dlg-h"><span class="small soft" id="calStep"></span><button class="icon-btn" id="calClose" aria-label="Close calibration"></button></div>
+  <div class="dlg-b">
+    <h2 class="t-title" id="calHead"></h2>
+    <p class="soft" id="calText" style="margin:10px 0 16px"></p>
+    <div id="calDia" style="max-width:110px"></div>
+    <div class="meter" id="calMeter" hidden><i id="calLevel" style="width:2%"></i></div>
+    <p class="note" id="calMsg" aria-live="polite"></p>
+    <div class="row" style="margin-top:14px"><button class="btn primary" id="calGo">Start</button><button class="btn quiet" id="calSkip" hidden>Skip this step</button></div>
+  </div>
+</dialog>
+
+<dialog id="settings" aria-labelledby="setTitle">
+  <div class="dlg-h"><h2 class="t-title" id="setTitle">Settings</h2><button class="icon-btn" id="setClose" aria-label="Close settings"></button></div>
+  <div class="dlg-b" id="setBody"></div>
+</dialog>
+
+<nav class="dock" aria-label="Sections"><div class="bar">
+  <button data-s="learn"></button><button data-s="songs"></button><button data-s="practice"></button><button data-s="tune"></button>
+</div></nav>
